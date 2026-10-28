@@ -56,7 +56,6 @@ export function McpTab({ searchQuery }: { searchQuery?: string }) {
 
   return (
     <div className="flex flex-col gap-[18px]">
-      {/* Status card */}
       <div className="relative overflow-hidden rounded-[20px] bg-bg-surface p-5 shadow-surface dark:bg-white/[0.04]">
         <div className="flex items-center justify-between">
           <div className="flex flex-col gap-1">
@@ -91,7 +90,6 @@ export function McpTab({ searchQuery }: { searchQuery?: string }) {
 
       <SettingSection label="Client Setup">
         <div className="flex flex-col gap-3 p-4 rounded-[16px] bg-bg-surface/50 dark:bg-white/[0.03]">
-          {/* Client Type Selector */}
           <div className="flex gap-2 p-1 rounded-[12px] bg-black/5 dark:bg-black/20 self-start">
             <button
               type="button"

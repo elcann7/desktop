@@ -34,10 +34,9 @@ describe("LinerMcpManager", () => {
     const mockWin = createMockWindow();
     const manager = new LinerMcpManager(() => mockWin, {
       enabled: true,
-      port: 0, // dynamic port
+      port: 0,
     });
 
-    // Wait briefly for server listen
     await new Promise((r) => setTimeout(r, 100));
 
     expect(manager.isRunning).toBe(true);
@@ -104,7 +103,6 @@ describe("LinerMcpManager", () => {
     await new Promise((r) => setTimeout(r, 150));
     expect(manager.isRunning).toBe(true);
 
-    // Connect official MCP client via SSE
     const client = new Client(
       { name: "test-ai-client", version: "1.0.0" },
       { capabilities: {} },
@@ -114,7 +112,6 @@ describe("LinerMcpManager", () => {
     );
     await client.connect(transport);
 
-    // Check list of tools
     const tools = await client.listTools();
     expect(tools.tools.length).toBeGreaterThanOrEqual(8);
     const names = tools.tools.map((t) => t.name);
@@ -124,7 +121,6 @@ describe("LinerMcpManager", () => {
     expect(names).toContain("liner_play_track");
     expect(names).toContain("liner_create_playlist");
 
-    // Test tool call: liner_get_playback_state
     manager.updateState({
       status: "playing",
       track: {
@@ -143,14 +139,12 @@ describe("LinerMcpManager", () => {
     expect(stateRes.content[0].text).toContain("Toca Toca");
     expect(stateRes.content[0].text).toContain("Fly Project");
 
-    // Test tool call: liner_control_playback
     const controlRes: any = await client.callTool({
       name: "liner_control_playback",
       arguments: { action: "next" },
     });
     expect(controlRes.content[0].text).toContain("Playback action executed");
 
-    // Test tool call: liner_search_tracks
     const searchRes: any = await client.callTool({
       name: "liner_search_tracks",
       arguments: { query: "Fly Project", limit: 3 },

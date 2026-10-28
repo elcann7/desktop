@@ -8,7 +8,6 @@ import { searchRaw } from "@/shared/youtube";
 import type { Track } from "@/shared/types";
 
 export function useMcpSync() {
-  // Sync playback state to Electron main process
   useEffect(() => {
     const syncState = () => {
       const state = usePlayerStore.getState();
@@ -38,7 +37,6 @@ export function useMcpSync() {
     return usePlayerStore.subscribe(syncState);
   }, []);
 
-  // Expose MCP execution bridge for Electron
   useEffect(() => {
     window.__LINER_MCP__ = {
       controlPlayback: async (action: string, value?: unknown) => {

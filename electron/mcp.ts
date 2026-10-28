@@ -281,7 +281,6 @@ export class LinerMcpManager {
         return;
       }
 
-      // Healthcheck and discovery info
       if (url.pathname === "/" || url.pathname === "/health") {
         res.writeHead(200, { "Content-Type": "application/json" });
         res.end(

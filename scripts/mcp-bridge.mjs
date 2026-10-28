@@ -19,7 +19,6 @@ async function main() {
   let messageUrl = "";
   let buffer = "";
 
-  // Background loop to read SSE events from Liner and output to process.stdout
   (async () => {
     while (true) {
       const { done, value } = await reader.read();
@@ -48,14 +47,12 @@ async function main() {
     process.exit(1);
   });
 
-  // Read lines from process.stdin (from Antigravity/Claude) and POST to Liner
   const rl = readline.createInterface({
     input: process.stdin,
     terminal: false,
   });
   for await (const line of rl) {
     if (!line.trim()) continue;
-    // Wait until messageUrl is received from SSE handshake
     let retries = 0;
     while (!messageUrl && retries < 50) {
       await new Promise((r) => setTimeout(r, 20));
