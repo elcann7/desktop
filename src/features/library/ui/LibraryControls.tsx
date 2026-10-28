@@ -1,3 +1,4 @@
+import { useState } from "react";
 import {
   Search2Line,
   CloseLine,
@@ -6,6 +7,7 @@ import {
   GridFill,
   ListCheckLine,
   ListCheckFill,
+  Refresh1Line,
 } from "@mingcute/react";
 import Button from "@/shared/ui/Button";
 import {
@@ -15,6 +17,7 @@ import {
 } from "@/shared/ui";
 import type { LibraryTab, LibraryViewMode } from "../types";
 import { useTranslation } from "@/languages";
+import { notifyLibraryChanged } from "../hooks/usePlaylists";
 
 interface LibraryControlsProps {
   activeTab: LibraryTab;
@@ -35,6 +38,12 @@ export default function LibraryControls({
   onCreatePlaylist,
 }: LibraryControlsProps) {
   const { t } = useTranslation();
+  const [rotation, setRotation] = useState(0);
+
+  const handleRefresh = () => {
+    setRotation((r) => r + 360);
+    notifyLibraryChanged();
+  };
 
   const placeholderByTab: Record<LibraryTab, string> = {
     all: t("library.search_all"),
@@ -114,6 +123,22 @@ export default function LibraryControls({
         ) : (
           <ListCheckLine size={16} />
         )}
+      </Button>
+      <Button
+        variant="secondary"
+        data-no-tooltip="true"
+        aria-label="Refresh library"
+        title="Refresh library"
+        onClick={handleRefresh}
+        className={`${iconButtonClass} !text-text-tertiary hover:!text-text-primary active:scale-95 transition-transform overflow-hidden`}
+      >
+        <Refresh1Line
+          size={16}
+          style={{
+            transform: `rotate(${rotation}deg)`,
+            transition: "transform 700ms cubic-bezier(0.2, 0.9, 0.3, 1)",
+          }}
+        />
       </Button>
       {onCreatePlaylist && (
         <Button

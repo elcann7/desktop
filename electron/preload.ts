@@ -187,6 +187,14 @@ export interface LinerElectronApi {
   discordUpdateState: (state: any) => void;
   discordUpdateSettings: (settings: any) => void;
   getDiscordStatus: () => Promise<DiscordStatus>;
+  mcpUpdateState: (state: any) => void;
+  mcpUpdateSettings: (settings: any) => void;
+  getMcpStatus: () => Promise<{
+    running: boolean;
+    port: number | null;
+    enabled: boolean;
+    bridgePath?: string;
+  }>;
   mintPoToken: (identifier: string) => Promise<string>;
   youtubeTvSession: () => Promise<YoutubeTvSession>;
   youtubeSolveN: (
@@ -441,6 +449,13 @@ const api: LinerElectronApi = {
     ipcRenderer.send("discord:update-settings", settings);
   },
   getDiscordStatus: () => ipcRenderer.invoke("discord:get-status"),
+  mcpUpdateState: (state) => {
+    ipcRenderer.send("mcp:update-state", state);
+  },
+  mcpUpdateSettings: (settings) => {
+    ipcRenderer.send("mcp:update-settings", settings);
+  },
+  getMcpStatus: () => ipcRenderer.invoke("mcp:get-status"),
   mintPoToken: (identifier) => ipcRenderer.invoke("potoken:mint", identifier),
   youtubeTvSession: () => ipcRenderer.invoke("youtube:tv-session"),
   youtubeSolveN: (playerId, values) =>

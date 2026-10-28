@@ -71,6 +71,7 @@ import {
   NativeSnapPreview,
 } from "./snap-native.js";
 import { DiscordRpcManager } from "./discord.js";
+import { LinerMcpManager } from "./mcp.js";
 import { PoTokenService } from "./youtube/potoken.js";
 import { setupLocalTracks } from "./local-tracks/ipc.js";
 import { registerLocalTrackScheme } from "./local-tracks/protocol.js";
@@ -118,6 +119,7 @@ let overlayManager: OverlayManager | null = null;
 let thumbar: ThumbarController | null = null;
 let bundleManager: BundleManager | null = null;
 let discordRpcManager: DiscordRpcManager | null = null;
+let mcpManager: LinerMcpManager | null = null;
 let poTokenService: PoTokenService | null = null;
 
 // every helper process we spawn (tracert, icon cache refresh, ...) is tracked so
@@ -176,6 +178,8 @@ const shutdown = createShutdown({
       // drop the discord ipc socket so presence clears and nothing keeps the process alive
       discordRpcManager?.destroy();
       discordRpcManager = null;
+      mcpManager?.destroy();
+      mcpManager = null;
     },
     () => {
       if (snapPreview && !snapPreview.isDestroyed()) snapPreview.destroy();
@@ -581,6 +585,7 @@ if (!gotTheLock) {
     overlayManager.registerShortcut();
 
     discordRpcManager = new DiscordRpcManager();
+    mcpManager = new LinerMcpManager(() => mainWindow);
     poTokenService = new PoTokenService(path.join(__dirname, "preload.cjs"));
 
     const isHyprland = Boolean(

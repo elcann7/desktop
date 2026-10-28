@@ -8,6 +8,7 @@ import {
   DiscordFill,
   KeyboardLine,
   YoutubeFill,
+  AiLine,
 } from "@mingcute/react";
 import {
   Play,
@@ -33,6 +34,7 @@ import {
   AboutTab,
   OverlayTab,
   DiscordTab,
+  McpTab,
   YoutubeTab,
 } from "./tabs";
 
@@ -41,6 +43,7 @@ type TabId =
   | "Shortcuts"
   | "Overlay"
   | "Discord"
+  | "Mcp"
   | "Youtube"
   | "Appearance"
   | "Storage"
@@ -54,6 +57,7 @@ const TAB_ICONS: Record<TabId, React.ComponentType<any>> = {
   Shortcuts: KeyboardLine,
   Overlay: Widget5,
   Discord: DiscordFill,
+  Mcp: AiLine,
   Youtube: YoutubeFill,
   Appearance: Palette,
   Storage: Database,
@@ -65,7 +69,7 @@ type TabGroupKey = "player" | "interface" | "integrations" | "application";
 const TAB_GROUPS: { labelKey: TabGroupKey; ids: TabId[] }[] = [
   { labelKey: "player", ids: ["Playback", "Shortcuts"] },
   { labelKey: "interface", ids: ["Appearance", "Overlay"] },
-  { labelKey: "integrations", ids: ["Youtube", "Discord"] },
+  { labelKey: "integrations", ids: ["Youtube", "Discord", "Mcp"] },
   { labelKey: "application", ids: ["Storage", "About"] },
 ];
 
@@ -274,6 +278,7 @@ export default function SettingsModal() {
     Shortcuts: t("settings.tabs.shortcuts") || "Shortcuts",
     Overlay: t("settings.tabs.overlay") || "Overlay",
     Discord: t("settings.tabs.discord") || "Discord RPC",
+    Mcp: "MCP",
     Youtube: t("settings.tabs.youtube") || "YouTube",
     Appearance: t("settings.tabs.appearance"),
     Storage: t("settings.tabs.storage"),
@@ -291,6 +296,9 @@ export default function SettingsModal() {
     Discord:
       t("settings.discord.description") ||
       "Show what you're listening to on Discord with artwork, artist badge and progress bar.",
+    Mcp:
+      t("settings.mcp.description") ||
+      "Model Context Protocol server for AI assistant control and playlist management.",
     Youtube:
       t("settings.youtube.description") ||
       "Sign in to your YouTube account to prevent playback errors.",
@@ -309,6 +317,7 @@ export default function SettingsModal() {
       Shortcuts: "settings.tabs.shortcuts",
       Overlay: "settings.tabs.overlay",
       Discord: "settings.tabs.discord",
+      Mcp: "settings.tabs.mcp",
       Youtube: "settings.tabs.youtube",
       Appearance: "settings.theme.title",
       Storage: "settings.tabs.storage",
@@ -320,6 +329,7 @@ export default function SettingsModal() {
       Shortcuts: "settings.shortcuts.description",
       Overlay: "settings.overlay.description",
       Discord: "settings.discord.description",
+      Mcp: "settings.mcp.description",
       Youtube: "settings.youtube.description",
       Appearance: "settings.theme.description",
       Storage: "settings.storage.description",
@@ -623,6 +633,7 @@ export default function SettingsModal() {
               {activeTab === "Discord" && (
                 <DiscordTab searchQuery={searchQuery} />
               )}
+              {activeTab === "Mcp" && <McpTab searchQuery={searchQuery} />}
               {activeTab === "Youtube" && (
                 <YoutubeTab searchQuery={searchQuery} />
               )}
