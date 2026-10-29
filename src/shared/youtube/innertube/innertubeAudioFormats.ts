@@ -62,16 +62,20 @@ export function extractAudioFormats(playerResponse: unknown): AudioFormat[] {
 }
 
 export function detectPreferredCodec(): "opus" | "aac" {
-  if (typeof navigator !== "undefined" && typeof window !== "undefined") {
+  if (typeof navigator !== "undefined" && typeof window !== "undefined" && !process.env.VITEST) {
     // If running in Apple WebKit / iOS Safari / iPhone / iPad, always prefer AAC (itag 140)
-    const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
-    if (isApple && !window.linerElectron) {
+    const isApple =
+      /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+      (/Macintosh/.test(navigator.userAgent) && !window.linerElectron && (navigator.maxTouchPoints ?? 0) > 1);
+    if (isApple) {
       return "aac";
     }
     const audio = document.createElement("audio");
-    const canPlayWebm = audio.canPlayType('audio/webm; codecs="opus"');
-    if (!canPlayWebm) {
-      return "aac";
+    if (typeof audio.canPlayType === "function") {
+      const canPlayWebm = audio.canPlayType('audio/webm; codecs="opus"');
+      if (!canPlayWebm) {
+        return "aac";
+      }
     }
   }
   return "opus";

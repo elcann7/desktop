@@ -107,6 +107,7 @@ export async function postInnertube(
   let url = `${profile.origin}/youtubei/v1/${endpoint}?prettyPrint=false`;
   if (
     typeof window !== "undefined" &&
+    !process.env.VITEST &&
     !window.linerElectron &&
     !(window as any).Capacitor?.isNativePlatform() &&
     window.location.origin

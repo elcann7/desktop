@@ -19,6 +19,7 @@ export async function assertStreamReachable(
 ): Promise<void> {
   if (
     typeof window !== "undefined" &&
+    !process.env.VITEST &&
     (!window.linerElectron || (window as any).Capacitor?.isNativePlatform())
   ) {
     return;

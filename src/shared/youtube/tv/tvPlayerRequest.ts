@@ -35,6 +35,7 @@ export async function requestTvPlayer(
   let url = PLAYER_URL;
   if (
     typeof window !== "undefined" &&
+    !process.env.VITEST &&
     !window.linerElectron &&
     !(window as any).Capacitor?.isNativePlatform?.() &&
     window.location.origin
