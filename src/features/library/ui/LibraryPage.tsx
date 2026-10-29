@@ -22,6 +22,10 @@ import { useImportStore } from "../store/importStore";
 import { usePageBackdrop } from "@/shared/lib";
 import ImportingPlaylistCard from "./ImportingPlaylistCard";
 import { LocalFilesCard } from "../local";
+import { useAuthStore } from "@/features/auth";
+import { Download2Line } from "@mingcute/react";
+import { useDownloadStore } from "@/features/player/store/downloadStore";
+import DownloadedTracksView from "./DownloadedTracksView";
 
 const PAGE_SIZE = 24;
 
@@ -44,6 +48,7 @@ const initialState: LibraryState = {
   playlists: { ...initialTabState },
   albums: { ...initialTabState },
   artists: { ...initialTabState },
+  downloaded: { ...initialTabState },
 };
 
 function sortByRecent(items: LibraryItemViewModel[]) {
@@ -143,6 +148,71 @@ function LikesPlaylistCard({
   );
 }
 
+function DownloadedMusicCard({
+  count,
+  onClick,
+  viewMode = "grid",
+}: {
+  count: number;
+  onClick: () => void;
+  viewMode?: LibraryViewMode;
+}) {
+  if (viewMode === "list") {
+    return (
+      <div
+        onClick={onClick}
+        className="w-full flex items-center justify-between rounded-md p-[8px] outline-none transition-colors duration-150 ease-out cursor-pointer hover:bg-border-alpha-14 select-none"
+      >
+        <div className="flex items-center gap-[16px] min-w-0">
+          <div className="relative h-[48px] w-[48px] shrink-0 overflow-hidden rounded-md bg-gradient-to-br from-emerald-600 to-teal-900 flex items-center justify-center text-white shadow-md">
+            <Download2Line size={24} />
+          </div>
+
+          <div className="min-w-0 flex flex-col gap-[2px]">
+            <h3
+              className="m-0 max-w-[min(52vw,560px)] overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-[1.2] text-text-primary"
+              style={{
+                fontFamily: "var(--font-inter), sans-serif",
+                fontWeight: 400,
+              }}
+            >
+              Yüklənmiş Mahnılar
+            </h3>
+            <p
+              className="m-0 flex min-w-0 items-center text-[13px] leading-[1.2] overflow-hidden text-emerald-400 font-medium"
+              style={{
+                fontFamily: "var(--font-inter), sans-serif",
+              }}
+            >
+              {count} mahnı · Offline
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div
+      onClick={onClick}
+      className="group flex flex-col gap-[8px] cursor-pointer"
+      draggable={false}
+    >
+      <div className="relative aspect-square w-full overflow-hidden rounded-md bg-gradient-to-br from-emerald-600 to-teal-900 flex items-center justify-center text-white shadow-md group-hover:scale-[1.02] transition-transform">
+        <Download2Line size={36} />
+      </div>
+      <div className="flex flex-col gap-[4px]">
+        <span className="truncate text-[14px] font-[500] text-text-primary">
+          Yüklənmiş Mahnılar
+        </span>
+        <span className="truncate text-[13px] text-emerald-400 font-medium">
+          {count} mahnı · Offline
+        </span>
+      </div>
+    </div>
+  );
+}
+
 export default function LibraryPage() {
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -151,6 +221,24 @@ export default function LibraryPage() {
   const [activeTab, setActiveTab] = useState<LibraryTab>("all");
   const [stateByTab, setStateByTab] = useState<LibraryState>(initialState);
   const [debouncedQuery, setDebouncedQuery] = useState("");
+  const user = useAuthStore((s) => s.user);
+  const downloadedTrackIds = useDownloadStore((s) => s.downloadedTrackIds);
+  const [isOffline, setIsOffline] = useState(() => typeof navigator !== "undefined" && !navigator.onLine);
+
+  useEffect(() => {
+    const handleOnline = () => setIsOffline(false);
+    const handleOffline = () => {
+      setIsOffline(true);
+      setActiveTab("downloaded");
+    };
+    window.addEventListener("online", handleOnline);
+    window.addEventListener("offline", handleOffline);
+    return () => {
+      window.removeEventListener("online", handleOnline);
+      window.removeEventListener("offline", handleOffline);
+    };
+  }, []);
+
   const [viewMode, setViewMode] = useState<LibraryViewMode>(() => {
     if (typeof window !== "undefined") {
       const saved = localStorage.getItem("liner_library_view_mode");
@@ -227,7 +315,7 @@ export default function LibraryPage() {
     if (typeof window === "undefined") return;
     const params = new URLSearchParams(window.location.search);
     const tab = params.get("tab") as LibraryTab | null;
-    if (tab && ["all", "playlists", "albums", "artists"].includes(tab)) {
+    if (tab && ["all", "playlists", "albums", "artists", "downloaded"].includes(tab)) {
       setActiveTab(tab);
     }
   }, []);
@@ -418,12 +506,37 @@ export default function LibraryPage() {
         </div>
 
         <div className="px-[12px] pt-[4px] pb-[20px]">
-          {activeTab === "playlists" && playlistsError ? (
+          {!user && (
+            <div className="mb-4 p-3.5 rounded-xl bg-gradient-to-r from-accent-primary/20 via-accent-secondary/15 to-transparent border border-white/10 flex items-center justify-between gap-3 shadow-md">
+              <div className="min-w-0">
+                <h3 className="text-[14.5px] font-semibold text-text-primary">Daxil olmamısınız</h3>
+                <p className="text-[12px] text-text-secondary mt-0.5">
+                  Öz pleylistlərinizi və bəyəndiyiniz mahnıları görmək üçün daxil olun.
+                </p>
+              </div>
+              <button
+                type="button"
+                onClick={() => navigate("/login")}
+                className="shrink-0 px-4 py-1.5 rounded-full bg-white text-black font-semibold text-[13px] hover:bg-white/90 active:scale-95 transition-transform cursor-pointer"
+              >
+                Daxil ol
+              </button>
+            </div>
+          )}
+
+          {isOffline && (
+            <div className="mb-4 px-3.5 py-2.5 rounded-lg bg-amber-500/15 border border-amber-500/30 flex items-center gap-2 text-amber-200 text-[13px]">
+              <span>⚡ İnternet bağlantısı yoxdur — Yalnız yüklənmiş offline mahnılar göstərilir.</span>
+            </div>
+          )}
+
+          {activeTab === "downloaded" ? (
+            <DownloadedTracksView searchQuery={activeState.query} />
+          ) : activeTab === "playlists" && playlistsError ? (
             <div className="mb-[10px] text-[12px] text-accent-secondary">
               {t("playlist.error_loading")}
             </div>
-          ) : null}
-          {initialLoading ? (
+          ) : initialLoading ? (
             <LibraryGridSkeleton viewMode={viewMode} />
           ) : (
             <AnimatePresence mode="wait" initial={false}>
@@ -453,6 +566,12 @@ export default function LibraryPage() {
                             onClick={() =>
                               navigate("/library/playlist?id=likes")
                             }
+                          />,
+                          <DownloadedMusicCard
+                            key="downloaded-music-card"
+                            count={downloadedTrackIds.size}
+                            viewMode={viewMode}
+                            onClick={() => setActiveTab("downloaded")}
                           />,
                           <LocalFilesCard
                             key="local-files-card"

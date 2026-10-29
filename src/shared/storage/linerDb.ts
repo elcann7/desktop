@@ -393,6 +393,28 @@ class LinerDb {
     return memList;
   }
 
+  async getAllDownloadedTracks(): Promise<Track[]> {
+    const audioRecords = await this.getOldestAudioRecords();
+    const tracks: Track[] = [];
+    for (const record of audioRecords) {
+      const cached = await this.getTrack(record.trackId);
+      if (cached) {
+        tracks.push({
+          id: cached.id,
+          title: cached.title,
+          artists: cached.artists,
+          album: cached.albumTitle
+            ? { id: cached.albumId || "", title: cached.albumTitle }
+            : undefined,
+          coverUrl: cached.coverUrl || "",
+          durationMs: cached.durationMs || 0,
+          playCount: 0,
+        });
+      }
+    }
+    return tracks;
+  }
+
   async hasAudio(trackId: string): Promise<boolean> {
     if (this.memAudio.has(trackId)) return true;
 

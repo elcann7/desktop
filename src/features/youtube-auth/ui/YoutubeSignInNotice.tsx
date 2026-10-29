@@ -21,6 +21,9 @@ export default function YoutubeSignInNotice() {
   const retry = useYoutubeSignInStore((state) => state.retry);
   const failed = phase === "error";
 
+  if (typeof window !== "undefined" && (!window.linerElectron || window.innerWidth < 768)) {
+    return null;
+  }
   if (typeof document === "undefined") return null;
 
   return createPortal(

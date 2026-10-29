@@ -503,28 +503,34 @@ export function FullscreenPlayer({
         <div
           className={cn(
             "flex-1 h-full min-h-0 pl-2 pr-6 flex-col relative",
-            mobileTab === "lyrics" ? "flex w-full !px-3 !pt-12 !pb-6" : "hidden md:flex",
+            mobileTab === "lyrics" ? "flex w-full !px-3 !pt-2 !pb-4" : "hidden md:flex",
           )}
         >
           {mobileTab === "lyrics" && (
-            <div className="md:hidden flex items-center justify-between w-full mb-3 shrink-0">
+            <div className="md:hidden flex items-center justify-between w-full mb-3 shrink-0 pt-2 z-40">
               <button
                 type="button"
                 onClick={() => setMobileTab("player")}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white text-[13px] font-semibold border-0 cursor-pointer backdrop-blur-md"
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white text-[13px] font-medium border-0 cursor-pointer backdrop-blur-md"
               >
                 <LeftLine size={16} />
                 <span>Song</span>
               </button>
-              <div className="text-center truncate max-w-[180px]">
-                <div className="text-white text-[13px] font-medium truncate">{currentTrack?.title}</div>
-                <div className="text-white/60 text-[11px] truncate">{currentTrack?.artists}</div>
+              <div className="flex-1 mx-2 text-center min-w-0">
+                <div className="text-white text-[13px] font-semibold truncate leading-tight">{currentTrack?.title}</div>
+                <div className="text-white/60 text-[11px] truncate leading-tight">{currentTrack?.artists}</div>
               </div>
-              <div className="w-[50px]" />
+              <button
+                type="button"
+                onClick={onClose}
+                className="inline-flex items-center justify-center w-[32px] h-[32px] rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white/90 border-0 cursor-pointer backdrop-blur-md"
+              >
+                <DownLine size={18} />
+              </button>
             </div>
           )}
 
-          <div className="absolute top-[6px] left-1/2 -translate-x-1/2 z-30 pointer-events-none flex justify-center">
+          <div className="hidden md:flex absolute top-[6px] left-1/2 -translate-x-1/2 z-30 pointer-events-none justify-center">
             <div className="relative inline-flex">
               <BetaVisualsWarning docked={showProviderIsland} />
               {showProviderIsland && <LyricsProviderIsland />}
@@ -633,7 +639,8 @@ export function FullscreenPlayer({
         data-no-window-drag
         className={cn(
           ISLAND_SURFACE,
-          "absolute top-[6px] left-[6px] z-30 inline-flex h-[32px] w-[32px] items-center justify-center border-none text-white/80 hover:text-white hover:bg-white/10 active:scale-[0.94] transition-all cursor-pointer select-none pointer-events-auto",
+          "absolute top-[6px] left-[6px] z-30 h-[32px] w-[32px] items-center justify-center border-none text-white/80 hover:text-white hover:bg-white/10 active:scale-[0.94] transition-all cursor-pointer select-none pointer-events-auto",
+          mobileTab === "lyrics" ? "hidden md:inline-flex" : "inline-flex",
         )}
       >
         <DownLine size={18} />

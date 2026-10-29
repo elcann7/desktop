@@ -50,6 +50,7 @@ export default function LibraryControls({
     playlists: t("library.search_playlists"),
     albums: t("library.search_albums"),
     artists: t("library.search_artists"),
+    downloaded: t("library.search_downloaded") || "Search downloaded songs...",
   };
 
   const iconButtonClass = `${HERO_BUTTON_CLASS} ${HERO_GLASS_BUTTON_CLASS} !w-[52px] !p-0 text-text-primary`;

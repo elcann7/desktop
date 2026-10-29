@@ -1,4 +1,4 @@
-export type LibraryTab = "all" | "playlists" | "albums" | "artists";
+export type LibraryTab = "all" | "playlists" | "albums" | "artists" | "downloaded";
 
 export type LibraryItemKind = "playlist" | "album" | "artist";
 

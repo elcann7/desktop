@@ -8,7 +8,7 @@ interface LibraryTabsProps {
   onChange: (tab: LibraryTab) => void;
 }
 
-const tabs: LibraryTab[] = ["all", "playlists", "albums", "artists"];
+const tabs: LibraryTab[] = ["all", "playlists", "albums", "artists", "downloaded"];
 
 export default function LibraryTabs({ activeTab, onChange }: LibraryTabsProps) {
   const { t } = useTranslation();
@@ -18,6 +18,7 @@ export default function LibraryTabs({ activeTab, onChange }: LibraryTabsProps) {
     playlists: t("library.tab_playlists"),
     albums: t("library.tab_albums"),
     artists: t("library.tab_artists"),
+    downloaded: t("library.tab_downloaded") || "Downloaded",
   };
 
   return (

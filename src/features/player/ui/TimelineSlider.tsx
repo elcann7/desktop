@@ -42,8 +42,13 @@ export const TimelineSlider = memo(function TimelineSlider({
   const [isDragging, setIsDragging] = useState(false);
   const [scrubPosition, setScrubPosition] = useState<number | null>(null);
   const trackRef = useRef<HTMLDivElement>(null);
+  const latestPosRef = useRef<number>(0);
+  const isDraggingRef = useRef<boolean>(false);
 
   const duration = Math.max(0, durationMs);
+  const durationRef = useRef(duration);
+  durationRef.current = duration;
+
   const currentPosition =
     isDragging && scrubPosition !== null
       ? scrubPosition
@@ -56,14 +61,15 @@ export const TimelineSlider = memo(function TimelineSlider({
   const calculatePositionFromPointer = useCallback(
     (clientX: number): number => {
       const rect = trackRef.current?.getBoundingClientRect();
-      if (!rect || rect.width === 0) return currentPosition;
+      const currentDuration = durationRef.current;
+      if (!rect || rect.width === 0 || currentDuration <= 0) return latestPosRef.current;
       const ratio = Math.max(
         0,
         Math.min(1, (clientX - rect.left) / rect.width),
       );
-      return ratio * duration;
+      return Math.round(ratio * currentDuration);
     },
-    [currentPosition, duration],
+    [],
   );
 
   const handlePointerDown = useCallback(
@@ -71,34 +77,56 @@ export const TimelineSlider = memo(function TimelineSlider({
       e.stopPropagation();
       e.preventDefault();
       setIsDragging(true);
-      (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+      isDraggingRef.current = true;
+      try {
+        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+      } catch {}
 
-      const targetPos = calculatePositionFromPointer(e.clientX);
-      setScrubPosition(targetPos);
-      onScrub?.(targetPos);
+      const initialPos = calculatePositionFromPointer(e.clientX);
+      latestPosRef.current = initialPos;
+      setScrubPosition(initialPos);
+      onScrub?.(initialPos);
 
-      const onPointerMove = (ev: PointerEvent) => {
-        const pos = calculatePositionFromPointer(ev.clientX);
-        setScrubPosition(pos);
-        onScrub?.(pos);
-      };
-
-      const onPointerUp = (ev: PointerEvent) => {
-        const finalPos = calculatePositionFromPointer(ev.clientX);
+      const cleanup = () => {
         setIsDragging(false);
+        isDraggingRef.current = false;
         setScrubPosition(null);
         try {
-          (e.target as HTMLElement).releasePointerCapture?.(ev.pointerId);
+          (e.target as HTMLElement).releasePointerCapture?.(e.pointerId);
         } catch {}
         window.removeEventListener("pointermove", onPointerMove);
         window.removeEventListener("pointerup", onPointerUp);
-        window.removeEventListener("pointercancel", onPointerUp);
-        onSeek(finalPos);
+        window.removeEventListener("pointercancel", onPointerCancel);
       };
 
-      window.addEventListener("pointermove", onPointerMove);
+      const onPointerMove = (ev: PointerEvent) => {
+        if (!isDraggingRef.current) return;
+        if (ev.clientX !== undefined && ev.clientX !== null && !isNaN(ev.clientX)) {
+          const pos = calculatePositionFromPointer(ev.clientX);
+          latestPosRef.current = pos;
+          setScrubPosition(pos);
+          onScrub?.(pos);
+        }
+      };
+
+      const onPointerUp = (ev: PointerEvent) => {
+        if (ev.clientX !== undefined && ev.clientX !== null && !isNaN(ev.clientX)) {
+          const finalPos = calculatePositionFromPointer(ev.clientX);
+          latestPosRef.current = finalPos;
+        }
+        cleanup();
+        onSeek(latestPosRef.current);
+      };
+
+      const onPointerCancel = () => {
+        cleanup();
+        // On cancel / touch interruption, commit last dragged position, NEVER reset to 0!
+        onSeek(latestPosRef.current);
+      };
+
+      window.addEventListener("pointermove", onPointerMove, { passive: false });
       window.addEventListener("pointerup", onPointerUp);
-      window.addEventListener("pointercancel", onPointerUp);
+      window.addEventListener("pointercancel", onPointerCancel);
     },
     [calculatePositionFromPointer, onScrub, onSeek],
   );
@@ -153,6 +181,7 @@ export const TimelineSlider = memo(function TimelineSlider({
   return (
     <div
       className={`group relative flex ${containerHeights} items-center select-none prevent-seek ${className}`}
+      style={{ touchAction: "none" }}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
     >
@@ -171,6 +200,7 @@ export const TimelineSlider = memo(function TimelineSlider({
         tabIndex={0}
         onKeyDown={handleKeyDown}
         onPointerDown={handlePointerDown}
+        style={{ touchAction: "none" }}
         className="relative flex h-full flex-1 items-center cursor-pointer outline-none"
       >
         <motion.div
