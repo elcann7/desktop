@@ -36,7 +36,7 @@ function DailyMixesSection({
         <div className="flex items-center gap-3">
           <MixFluidSquare coverUrl={firstCoverUrl} />
           <h2
-            className="font-roboto-flex-heading text-text-primary text-[36px] m-0 leading-none tracking-tight"
+            className="font-roboto-flex-heading text-text-primary text-[22px] md:text-[36px] m-0 leading-none tracking-tight"
             style={headingStyle}
           >
             {t("home.dailyMixes") || "Your Mixes"}

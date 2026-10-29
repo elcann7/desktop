@@ -686,13 +686,13 @@ function MiniPlayer({
           </div>
         )}
         <div
-          className={`relative grid h-full pointer-events-none ${
+          className={`relative flex md:grid h-full items-center justify-between pointer-events-none ${
             embedded
-              ? "grid-cols-[280px_minmax(0,1fr)_260px]"
-              : "grid-cols-[286px_minmax(0,1fr)]"
+              ? "md:grid-cols-[280px_minmax(0,1fr)_260px]"
+              : "md:grid-cols-[286px_minmax(0,1fr)]"
           } ${!usesRoundedStyle && !embedded ? "pb-[4px]" : ""}`}
         >
-          <div className="flex h-full items-center gap-[16px] px-[18px] pt-[1px] pointer-events-none cursor-default">
+          <div className="flex h-full items-center gap-[12px] md:gap-[16px] px-[12px] md:px-[18px] pt-[1px] pointer-events-none cursor-default max-w-[calc(100%-120px)] md:max-w-none">
             <div
               role="button"
               tabIndex={0}
@@ -785,7 +785,7 @@ function MiniPlayer({
           </div>
 
           <div
-            className={`flex h-full items-center pl-[10px] pr-[18px] pointer-events-none ${
+            className={`hidden md:flex h-full items-center pl-[10px] pr-[18px] pointer-events-none ${
               embedded ? "col-start-3" : ""
             }`}
           >
@@ -978,9 +978,9 @@ function MiniPlayer({
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-0 flex items-center justify-center">
+        <div className="pointer-events-none absolute inset-y-0 right-[12px] md:inset-0 flex items-center justify-end md:justify-center">
           <div
-            className="pointer-events-auto flex items-center gap-[8px] prevent-seek cursor-default"
+            className="pointer-events-auto flex items-center gap-[6px] md:gap-[8px] prevent-seek cursor-default"
             onPointerDown={(e) => e.stopPropagation()}
           >
             <button

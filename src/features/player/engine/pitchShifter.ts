@@ -596,12 +596,15 @@ export class PitchShifterController {
 
   public resumeContext(): void {
     this.clearSuspendTimer();
-    if (this.context && this.context.state === "suspended") {
-      void this.context.resume().catch((err) => {
-        console.warn("[AudioEffects] AudioContext resume failed:", err);
-      });
+    if (this.context && this.context.state !== "running") {
+      try {
+        void this.context.resume().catch((err) => {
+          console.warn("[AudioEffects] AudioContext resume failed:", err);
+        });
+      } catch {}
     }
-    if (this.audio?.paused) this.scheduleSuspend();
+    const isMobile = typeof window !== "undefined" && (!window.linerElectron || (window as any).Capacitor?.isNativePlatform());
+    if (this.audio?.paused && !isMobile) this.scheduleSuspend();
   }
 
   private bindPlaybackState(audio: HTMLAudioElement): void {
@@ -642,6 +645,9 @@ export class PitchShifterController {
   }
 
   private scheduleSuspend(): void {
+    if (typeof window !== "undefined" && (!window.linerElectron || (window as any).Capacitor?.isNativePlatform())) {
+      return;
+    }
     this.clearSuspendTimer();
     const audio = this.audio;
     const ctx = this.context;

@@ -12,7 +12,7 @@ export function LoginBrandPanel({ title, subtitle }: LoginBrandPanelProps) {
   const { locale, setLocale, t } = useTranslation();
 
   return (
-    <aside className="relative flex min-h-[340px] flex-col overflow-hidden rounded-[14px] bg-black/[0.03] p-[24px] dark:bg-white/[0.035]">
+    <aside className="relative hidden md:flex min-h-[340px] flex-col overflow-hidden rounded-[14px] bg-black/[0.03] p-[24px] dark:bg-white/[0.035]">
       <img
         src={loginMark}
         alt=""

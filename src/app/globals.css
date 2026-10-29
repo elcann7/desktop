@@ -491,6 +491,21 @@ button.apple-glass-action:hover,
   mix-blend-mode: normal;
 }
 
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow-x: hidden !important;
+  overscroll-behavior-x: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+@supports (-webkit-touch-callout: none) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
 body[data-edge-to-edge="true"] {
   padding: 0 !important;
 }

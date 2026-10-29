@@ -1031,6 +1031,12 @@ export class PlayerRuntime {
     usePlayerStore.getState().setStatus("paused");
     log("cyan", "audio", "pause requested (fading out)");
 
+    const isMobile = typeof window !== "undefined" && (!window.linerElectron || (window as any).Capacitor?.isNativePlatform());
+    if (isMobile) {
+      this.audio.pause();
+      return;
+    }
+
     this.fadeVolume(0, 180, () => {
       if (epoch !== this.loadEpoch) return;
       this.audio.pause();
@@ -1065,13 +1071,20 @@ export class PlayerRuntime {
     }
 
     if (this.audio.paused) {
-      this.audio.volume = 0;
+      const isMobile = typeof window !== "undefined" && (!window.linerElectron || (window as any).Capacitor?.isNativePlatform());
+      if (!isMobile) {
+        this.audio.volume = 0;
+      } else {
+        this.audio.volume = targetVolume;
+      }
       const playPromise = this.audio.play();
       this.activePlayPromise = playPromise;
       playPromise
         .then(() => {
           if (epoch !== this.loadEpoch) return;
-          this.fadeVolume(targetVolume, 180);
+          if (!isMobile) {
+            this.fadeVolume(targetVolume, 180);
+          }
         })
         .catch((error) => {
           if (epoch !== this.loadEpoch) return;

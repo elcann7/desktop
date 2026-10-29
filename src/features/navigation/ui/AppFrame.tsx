@@ -8,7 +8,7 @@ import {
   useMemo,
   useSyncExternalStore,
 } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate, Link } from "react-router-dom";
 import {
   collectionPath,
   collectionPreviewState,
@@ -752,7 +752,7 @@ export default function AppFrame({ children }: AppFrameProps) {
       <div className="flex-1 min-h-0 flex flex-row w-full gap-1.5 overflow-hidden relative z-10">
         <aside
           ref={sidebarRef}
-          className="w-[58px] mt-[56px] shrink-0 z-[45] relative flex flex-col"
+          className="hidden md:flex w-[58px] mt-[56px] shrink-0 z-[45] relative flex-col"
         >
           <Sidebar
             searchOpen={searchOpen}
@@ -833,6 +833,41 @@ export default function AppFrame({ children }: AppFrameProps) {
           )}
         </div>
       </div>
+
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="flex md:hidden shrink-0 z-[56] w-full h-[54px] bg-bg-panel/95 backdrop-blur-2xl border-t border-border-primary/50 items-center justify-around px-2 select-none pointer-events-auto">
+        <Link
+          to="/"
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[11px] font-medium transition-colors no-underline",
+            location.pathname === "/" || location.pathname === "/home" ? "text-accent-primary" : "text-text-secondary"
+          )}
+        >
+          <GridFill size={20} />
+          <span>Home</span>
+        </Link>
+        <button
+          type="button"
+          onClick={handleSearchToggle}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[11px] font-medium transition-colors border-0 bg-transparent cursor-pointer",
+            searchOpen ? "text-accent-primary" : "text-text-secondary"
+          )}
+        >
+          <Search3Line size={20} />
+          <span>Search</span>
+        </button>
+        <Link
+          to="/collection"
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[11px] font-medium transition-colors no-underline",
+            location.pathname?.startsWith("/collection") ? "text-accent-primary" : "text-text-secondary"
+          )}
+        >
+          <PlaylistFill size={20} />
+          <span>Library</span>
+        </Link>
+      </nav>
 
       <AnimatePresence initial={false}>
         {fullscreenPlayerOpen ? (
