@@ -25,24 +25,28 @@ export default defineConfig(({ command, mode }) => {
       react(),
       tailwindcss(),
       contentSecurityPolicyPlugin(),
-      electron({
-        main: {
-          entry: "electron/main.ts",
-        },
-        preload: {
-          input: "electron/preload.ts",
-          vite: {
-            build: {
-              rollupOptions: {
-                output: {
-                  format: "cjs",
-                  entryFileNames: "preload.cjs",
+      ...(process.env.VITE_WEB === "true"
+        ? []
+        : [
+            electron({
+              main: {
+                entry: "electron/main.ts",
+              },
+              preload: {
+                input: "electron/preload.ts",
+                vite: {
+                  build: {
+                    rollupOptions: {
+                      output: {
+                        format: "cjs",
+                        entryFileNames: "preload.cjs",
+                      },
+                    },
+                  },
                 },
               },
-            },
-          },
-        },
-      }),
+            }),
+          ]),
     ],
     clearScreen: false,
     resolve: {

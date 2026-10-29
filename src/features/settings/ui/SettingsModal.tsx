@@ -50,7 +50,7 @@ type TabId =
   | "About";
 
 const navGroupClass =
-  "flex flex-col gap-[1px] rounded-[14px] bg-bg-surface/70 p-[4px] dark:bg-white/[0.06]";
+  "flex md:flex-col gap-[1px] rounded-[14px] bg-bg-surface/70 p-[4px] dark:bg-white/[0.06] shrink-0";
 
 const TAB_ICONS: Record<TabId, React.ComponentType<any>> = {
   Playback: Play,
@@ -400,11 +400,11 @@ export default function SettingsModal() {
       open={open}
       onOpenChange={(next) => (!next ? handleClose() : undefined)}
       maxWidth={900}
-      className="p-0 h-[700px] !max-h-[90vh] !flex-row overflow-hidden !bg-bg-surface/70 dark:!bg-bg-elevated/50 !backdrop-blur-[60px] !border-0"
+      className="p-0 h-[88vh] md:h-[700px] !max-h-[90vh] flex flex-col md:!flex-row overflow-hidden !bg-bg-surface/90 dark:!bg-bg-elevated/90 !backdrop-blur-[60px] !border-0"
     >
-      <aside className="w-[248px] shrink-0 flex flex-col min-h-0 bg-transparent">
-        <div className="px-[12px] pt-[14px] pb-[8px]">
-          <div className="relative flex items-center">
+      <aside className="w-full md:w-[248px] shrink-0 flex flex-col min-h-0 bg-transparent border-b md:border-b-0 md:border-r border-border-primary/30">
+        <div className="px-[12px] pt-[12px] pb-[6px] flex items-center justify-between gap-2">
+          <div className="relative flex-1 flex items-center">
             <span
               aria-hidden
               className={`pointer-events-none absolute inset-y-0 flex items-center gap-[6px] text-text-tertiary text-[13px] transition-all duration-200 ${
@@ -439,13 +439,21 @@ export default function SettingsModal() {
               </button>
             )}
           </div>
+          <button
+            type="button"
+            aria-label={t("common.close") || "Close"}
+            onClick={handleClose}
+            className="md:hidden w-[32px] h-[32px] shrink-0 inline-flex items-center justify-center rounded-lg text-text-tertiary hover:text-text-primary hover:bg-border-alpha-14 transition-colors border-0 bg-transparent p-0 cursor-pointer"
+          >
+            <CloseLine size={20} />
+          </button>
         </div>
 
         <nav
           ref={attachNavFade}
           onScroll={onNavScroll}
           style={navFadeStyle}
-          className="flex-1 min-h-0 overflow-y-auto px-[12px] pb-[12px] flex flex-col gap-[10px]"
+          className="shrink-0 md:flex-1 min-h-0 overflow-x-auto md:overflow-y-auto px-[12px] py-[6px] flex flex-row md:flex-col gap-[6px] md:gap-[10px]"
           role="tablist"
           aria-label={t("settings.title")}
         >
@@ -476,9 +484,9 @@ export default function SettingsModal() {
                         role="tab"
                         aria-selected={isActive}
                         onClick={() => setActiveTab(id)}
-                        className={`w-full flex items-center gap-[10px] px-[10px] py-[7px] rounded-[10px] border-0 cursor-pointer text-left transition-colors ${
+                        className={`w-auto md:w-full shrink-0 flex items-center gap-[10px] px-[12px] md:px-[10px] py-[7px] rounded-[10px] border-0 cursor-pointer text-left transition-colors ${
                           isActive
-                            ? "bg-transparent text-text-primary"
+                            ? "bg-accent-primary/15 text-accent-primary md:bg-transparent md:text-text-primary"
                             : "bg-transparent text-text-secondary hover:bg-black/[0.04] hover:text-text-primary dark:hover:bg-white/[0.05]"
                         }`}
                         style={{
@@ -549,7 +557,7 @@ export default function SettingsModal() {
           </div>
         </nav>
 
-        <div className="shrink-0 p-[12px] pt-[8px]">
+        <div className="hidden md:block shrink-0 p-[12px] pt-[8px]">
           <div className="flex items-center gap-[10px] px-[6px] py-[4px] min-w-0">
             <span className="relative shrink-0">
               <UserAvatar user={user ?? null} size={32} />

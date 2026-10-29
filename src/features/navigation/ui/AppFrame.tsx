@@ -22,6 +22,7 @@ import {
   User2Fill,
   AlbumFill,
   PlaylistFill,
+  Settings4Fill,
 } from "@mingcute/react";
 import Header from "./Header";
 import Sidebar from "./Sidebar";
@@ -117,6 +118,18 @@ export default function AppFrame({ children }: AppFrameProps) {
   const closeSearch = useModalStore((state) => state.closeSearch);
   const toggleSearch = useModalStore((state) => state.toggleSearch);
   const openSettings = useModalStore((state) => state.openSettings);
+  const toggleSettings = useModalStore((state) => state.toggleSettings);
+  const settingsOpen = useModalStore((state) => state.settingsOpen);
+
+  const [isMobile, setIsMobile] = useState(() =>
+    typeof window !== "undefined" ? window.innerWidth < 768 : false
+  );
+
+  useEffect(() => {
+    const handleResize = () => setIsMobile(window.innerWidth < 768);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   const [searchQuery, setSearchQuery] = useState("");
   const [queuePopupOpen, setQueuePopupOpen] = useState(false);
@@ -835,12 +848,14 @@ export default function AppFrame({ children }: AppFrameProps) {
       </div>
 
       {/* Mobile Bottom Navigation Bar */}
-      <nav className="flex md:hidden shrink-0 z-[56] w-full h-[54px] bg-bg-panel/95 backdrop-blur-2xl border-t border-border-primary/50 items-center justify-around px-2 select-none pointer-events-auto">
+      <nav className="flex md:hidden shrink-0 z-[56] w-full h-[56px] bg-bg-panel/95 backdrop-blur-2xl border-t border-border-primary/50 items-center justify-around px-2 select-none pointer-events-auto">
         <Link
           to="/"
           className={cn(
-            "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[11px] font-medium transition-colors no-underline",
-            location.pathname === "/" || location.pathname === "/home" ? "text-accent-primary" : "text-text-secondary"
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[10.5px] font-medium transition-colors no-underline",
+            (location.pathname === "/" || location.pathname === "/home") && !searchOpen && !settingsOpen
+              ? "text-accent-primary"
+              : "text-text-secondary"
           )}
         >
           <GridFill size={20} />
@@ -850,7 +865,7 @@ export default function AppFrame({ children }: AppFrameProps) {
           type="button"
           onClick={handleSearchToggle}
           className={cn(
-            "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[11px] font-medium transition-colors border-0 bg-transparent cursor-pointer",
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[10.5px] font-medium transition-colors border-0 bg-transparent cursor-pointer",
             searchOpen ? "text-accent-primary" : "text-text-secondary"
           )}
         >
@@ -860,13 +875,26 @@ export default function AppFrame({ children }: AppFrameProps) {
         <Link
           to="/collection"
           className={cn(
-            "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[11px] font-medium transition-colors no-underline",
-            location.pathname?.startsWith("/collection") ? "text-accent-primary" : "text-text-secondary"
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[10.5px] font-medium transition-colors no-underline",
+            location.pathname?.startsWith("/collection") && !searchOpen && !settingsOpen
+              ? "text-accent-primary"
+              : "text-text-secondary"
           )}
         >
           <PlaylistFill size={20} />
           <span>Library</span>
         </Link>
+        <button
+          type="button"
+          onClick={toggleSettings}
+          className={cn(
+            "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[10.5px] font-medium transition-colors border-0 bg-transparent cursor-pointer",
+            settingsOpen ? "text-accent-primary" : "text-text-secondary"
+          )}
+        >
+          <Settings4Fill size={20} />
+          <span>Settings</span>
+        </button>
       </nav>
 
       <AnimatePresence initial={false}>
@@ -909,82 +937,103 @@ export default function AppFrame({ children }: AppFrameProps) {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: -12, scale: 0.99 }}
             transition={{ duration: 0.18, ease: [0.16, 1, 0.3, 1] }}
-            className={`absolute right-0 z-[60] flex flex-col items-center pointer-events-none pt-[54px]`}
-            style={{
-              left: SIDEBAR_WIDTH + SHELL_EDGE_GAP,
-              right: SHELL_EDGE_GAP,
-              top: 6,
-            }}
+            className={cn(
+              "z-[60] flex flex-col items-center pointer-events-none",
+              isMobile
+                ? "fixed inset-0 pt-[14px] px-3 pb-[70px] bg-black/75 backdrop-blur-2xl"
+                : "absolute right-0 pt-[54px]"
+            )}
+            style={
+              isMobile
+                ? undefined
+                : {
+                    left: SIDEBAR_WIDTH + SHELL_EDGE_GAP,
+                    right: SHELL_EDGE_GAP,
+                    top: 6,
+                  }
+            }
           >
-            <div className="w-[min(660px,calc(100vw-72px))] h-[54px] rounded-[8px] pointer-events-auto flex items-center px-[18px] gap-[14px] bg-bg-panel/95 border border-border-primary/50 backdrop-blur-2xl">
-              <span className="shrink-0 flex items-center justify-center text-text-tertiary">
-                <AnimatePresence mode="wait" initial={false}>
-                  {searchLoading ? (
-                    <motion.span
-                      key="loader"
-                      initial={{ opacity: 0, scale: 0.8 }}
+            <div className="w-full max-w-[660px] flex items-center gap-2">
+              <div className="flex-1 h-[48px] md:h-[54px] rounded-[10px] pointer-events-auto flex items-center px-[14px] md:px-[18px] gap-[10px] md:gap-[14px] bg-bg-panel/95 border border-border-primary/50 backdrop-blur-2xl">
+                <span className="shrink-0 flex items-center justify-center text-text-tertiary">
+                  <AnimatePresence mode="wait" initial={false}>
+                    {searchLoading ? (
+                      <motion.span
+                        key="loader"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.1 }}
+                        className="inline-block h-[17px] w-[17px] rounded-full border-[1.5px] border-text-secondary border-t-transparent animate-spin"
+                        aria-hidden="true"
+                      />
+                    ) : (
+                      <motion.span
+                        key="icon"
+                        initial={{ opacity: 0, scale: 0.8 }}
+                        animate={{ opacity: 1, scale: 1 }}
+                        exit={{ opacity: 0, scale: 0.8 }}
+                        transition={{ duration: 0.1 }}
+                        className="inline-flex text-text-tertiary"
+                      >
+                        <Search3Line size={19} />
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                </span>
+
+                <input
+                  ref={searchInputRef}
+                  type="text"
+                  placeholder={t("common.search")}
+                  autoFocus
+                  value={searchQuery}
+                  onChange={(event) => setSearchQuery(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      submitSearchQuery(searchQuery);
+                      runSearchNow();
+                    }
+                  }}
+                  className="w-full flex-1 bg-transparent border-none outline-none text-text-primary text-[15px] md:text-[16px] placeholder:text-text-tertiary font-[400] tracking-tight"
+                  style={{
+                    fontFamily: "var(--font-inter), sans-serif",
+                    lineHeight: "1.2",
+                  }}
+                />
+
+                <AnimatePresence>
+                  {searchQuery.length > 0 && (
+                    <motion.button
+                      key="clear-btn"
+                      initial={{ opacity: 0, scale: 0.85 }}
                       animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{ duration: 0.1 }}
-                      className="inline-block h-[17px] w-[17px] rounded-full border-[1.5px] border-text-secondary border-t-transparent animate-spin"
-                      aria-hidden="true"
-                    />
-                  ) : (
-                    <motion.span
-                      key="icon"
-                      initial={{ opacity: 0, scale: 0.8 }}
-                      animate={{ opacity: 1, scale: 1 }}
-                      exit={{ opacity: 0, scale: 0.8 }}
-                      transition={{ duration: 0.1 }}
-                      className="inline-flex text-text-tertiary"
+                      exit={{ opacity: 0, scale: 0.85 }}
+                      transition={{ duration: 0.12 }}
+                      type="button"
+                      aria-label="Clear search"
+                      onClick={() => {
+                        setSearchQuery("");
+                        searchInputRef.current?.focus();
+                      }}
+                      className="shrink-0 text-text-tertiary hover:text-text-primary transition-colors border-none bg-transparent p-0 flex items-center justify-center cursor-pointer"
                     >
-                      <Search3Line size={19} />
-                    </motion.span>
+                      <CloseCircleFill size={18} />
+                    </motion.button>
                   )}
                 </AnimatePresence>
-              </span>
+              </div>
 
-              <input
-                ref={searchInputRef}
-                type="text"
-                placeholder={t("common.search")}
-                autoFocus
-                value={searchQuery}
-                onChange={(event) => setSearchQuery(event.target.value)}
-                onKeyDown={(event) => {
-                  if (event.key === "Enter") {
-                    event.preventDefault();
-                    submitSearchQuery(searchQuery);
-                    runSearchNow();
-                  }
-                }}
-                className="w-full flex-1 bg-transparent border-none outline-none text-text-primary text-[16px] placeholder:text-text-tertiary font-[400] tracking-tight"
-                style={{
-                  fontFamily: "var(--font-inter), sans-serif",
-                  lineHeight: "1.2",
-                }}
-              />
-
-              <AnimatePresence>
-                {searchQuery.length > 0 && (
-                  <motion.button
-                    key="clear-btn"
-                    initial={{ opacity: 0, scale: 0.85 }}
-                    animate={{ opacity: 1, scale: 1 }}
-                    exit={{ opacity: 0, scale: 0.85 }}
-                    transition={{ duration: 0.12 }}
-                    type="button"
-                    aria-label="Clear search"
-                    onClick={() => {
-                      setSearchQuery("");
-                      searchInputRef.current?.focus();
-                    }}
-                    className="shrink-0 text-text-tertiary hover:text-text-primary transition-colors border-none bg-transparent p-0 flex items-center justify-center cursor-pointer"
-                  >
-                    <CloseCircleFill size={18} />
-                  </motion.button>
-                )}
-              </AnimatePresence>
+              {isMobile && (
+                <button
+                  type="button"
+                  onClick={() => closeSearch()}
+                  className="pointer-events-auto text-[14px] text-accent-primary font-medium px-2 py-1 bg-transparent border-0 cursor-pointer shrink-0"
+                >
+                  Cancel
+                </button>
+              )}
             </div>
 
             <AnimatePresence mode="wait">
@@ -995,7 +1044,7 @@ export default function AppFrame({ children }: AppFrameProps) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.99 }}
                   transition={{ duration: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-[min(660px,calc(100vw-72px))] mt-[8px] max-h-[500px] h-[500px] rounded-[8px] pointer-events-auto flex flex-col overflow-hidden bg-bg-panel/95 border border-border-primary/50 backdrop-blur-2xl"
+                  className="w-full md:w-[min(660px,calc(100vw-72px))] mt-[8px] flex-1 md:flex-none max-h-[calc(100vh-140px)] md:max-h-[500px] md:h-[500px] rounded-[10px] pointer-events-auto flex flex-col overflow-hidden bg-bg-panel/95 border border-border-primary/50 backdrop-blur-2xl"
                 >
                   <div className="flex gap-[6px] px-[14px] pt-[12px] pb-[6px] shrink-0 overflow-x-auto">
                     {filterKeys.map((key) => {
@@ -1108,7 +1157,7 @@ export default function AppFrame({ children }: AppFrameProps) {
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: -6, scale: 0.99 }}
                   transition={{ duration: 0.1, ease: [0.16, 1, 0.3, 1] }}
-                  className="w-[min(660px,calc(100vw-72px))] mt-[8px] max-h-[480px] h-auto rounded-[8px] pointer-events-auto flex flex-col overflow-hidden bg-bg-panel/95 border border-border-primary/50 backdrop-blur-2xl"
+                  className="w-full md:w-[min(660px,calc(100vw-72px))] mt-[8px] flex-1 md:flex-none max-h-[calc(100vh-140px)] md:max-h-[480px] h-auto rounded-[10px] pointer-events-auto flex flex-col overflow-hidden bg-bg-panel/95 border border-border-primary/50 backdrop-blur-2xl"
                 >
                   <SearchHistoryList
                     onSelectQuery={handleSelectHistoryQuery}

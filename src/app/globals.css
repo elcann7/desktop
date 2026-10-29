@@ -548,3 +548,23 @@ html[data-hover-reset] [data-window-controls] button:hover {
 .lyrics-edge-fog[data-at-bottom] {
   --lyrics-fog-bottom: 0%;
 }
+
+/* iOS Mobile Polish & Smooth Momentum Scrolling */
+html, body {
+  -webkit-tap-highlight-color: transparent;
+  overscroll-behavior-y: none;
+  -webkit-touch-callout: none;
+}
+
+@media (max-width: 768px) {
+  * {
+    -webkit-overflow-scrolling: touch;
+  }
+
+  html, body, #root {
+    overflow-x: hidden;
+    width: 100%;
+    height: 100%;
+    position: fixed;
+  }
+}
