@@ -78,6 +78,23 @@ export default defineConfig(({ command, mode }) => {
             referer: "https://music.youtube.com",
           },
         },
+        "/api/jnn": {
+          target: "https://www.youtube.com",
+          changeOrigin: true,
+          headers: {
+            origin: "https://www.youtube.com",
+            referer: "https://www.youtube.com",
+          },
+        },
+        "/google-th": {
+          target: "https://www.google.com/js/th",
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/google-th/, ""),
+          headers: {
+            origin: "https://www.google.com",
+            referer: "https://www.google.com",
+          },
+        },
       },
     },
     build: {

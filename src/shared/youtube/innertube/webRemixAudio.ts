@@ -1,6 +1,8 @@
 import { Innertube, Platform } from "youtubei.js/web";
 import { getClientVisitorData } from "../session/visitorSession";
 import { InnertubeError } from "./innertubeClient";
+import { log } from "@/shared/utils/logger";
+import { mintBrowserPoToken } from "./browserPoToken";
 import {
   selectBestAudioFormat,
   toResolvedStream,
@@ -67,14 +69,25 @@ export async function getWebPlayer(): Promise<WebPlayer> {
   return player;
 }
 
-async function mintContentPoToken(videoId: string): Promise<string> {
-  const mint =
+async function mintContentPoToken(videoId: string): Promise<string | undefined> {
+  const electronMint =
     typeof window === "undefined"
       ? undefined
       : window.linerElectron?.mintPoToken;
-  if (!mint)
-    throw new InnertubeError("PO tokens need a newer Liner app version.", 501);
-  return mint(videoId);
+  if (electronMint) {
+    try {
+      return await electronMint(videoId);
+    } catch (err) {
+      log("yellow", "playback", `electron PoToken minting failed: ${String(err)}`);
+    }
+  }
+
+  try {
+    return await mintBrowserPoToken(videoId);
+  } catch (err) {
+    log("yellow", "playback", `browser PoToken minting bypassed/failed: ${String(err)}`);
+    return undefined;
+  }
 }
 
 function throwIfAborted(signal?: AbortSignal): void {
@@ -96,7 +109,7 @@ export async function resolveWebRemixAudioStream(
   throwIfAborted(options.signal);
   const info = await innertube.getBasicInfo(videoId, {
     client: "YTMUSIC",
-    po_token: poToken,
+    ...(poToken ? { po_token: poToken } : {}),
   });
   throwIfAborted(options.signal);
   const status = info.playability_status?.status;
@@ -131,6 +144,8 @@ export async function resolveWebRemixAudioStream(
   const deciphered = await source.decipher(innertube.session.player);
   throwIfAborted(options.signal);
   const url = new URL(deciphered);
-  url.searchParams.set("pot", poToken);
+  if (poToken) {
+    url.searchParams.set("pot", poToken);
+  }
   return toResolvedStream({ ...best, url: url.toString() });
 }

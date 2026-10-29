@@ -34,7 +34,7 @@ import { VolumeColumn } from "./VolumeColumn";
 import { SpeedPitchPicker } from "./SpeedPitchPicker";
 import { EqualizerPicker } from "./EqualizerPicker";
 import { isEqActive } from "../engine/equalizer";
-import { TimelineSlider } from "./TimelineSlider";
+import { TimelineSlider, formatPlaybackTime } from "./TimelineSlider";
 import { useTheme } from "next-themes";
 import { useCoverReady, CoverImage, loadCoverElement } from "@/features/covers";
 import { useHasPageBackdrop } from "@/features/settings/store/customizationStore";
@@ -730,6 +730,14 @@ function MiniPlayer({
                   : "width 200ms cubic-bezier(0.22, 1, 0.36, 1)",
             }}
           />
+        )}
+
+        {scrubRatio !== null && durationMs > 0 && (
+          <div className="absolute inset-0 z-30 flex items-center justify-center pointer-events-none bg-black/40 backdrop-blur-[2px] transition-opacity">
+            <span className="px-3 py-1 rounded-full bg-black/85 text-white font-mono text-[13px] font-semibold tracking-wide border border-white/20 shadow-2xl">
+              {formatPlaybackTime(Math.round(scrubRatio * durationMs))} / {formatPlaybackTime(durationMs)}
+            </span>
+          </div>
         )}
 
         {embedded ? null : (
