@@ -33,6 +33,12 @@ const EMPTY_STATE: PlayerState = {
   isEqEnabled: false,
   eqGains: FLAT_EQ,
   eqCustomPresets: [],
+  crossfadeSeconds: 4,
+  gaplessPlayback: true,
+  automix: true,
+  audioNormalization: true,
+  monoAudio: false,
+  offlineMode: false,
 };
 
 export function usePlayerState(): PlayerState {

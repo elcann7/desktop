@@ -18,7 +18,7 @@ import {
 } from "@/features/lyrics";
 import { AnimatePresence, motion } from "framer-motion";
 import { PlayerUiElements } from "./PlayerUiElements";
-import { DownLine } from "@mingcute/react";
+import { DownLine, LeftLine } from "@mingcute/react";
 import { preloadCoverArt, useCoverSrc } from "@/features/covers";
 import {
   isWindowVisible,
@@ -421,6 +421,7 @@ export function FullscreenPlayer({
     console.error("kawarp load error:", err);
   }, []);
 
+  const [mobileTab, setMobileTab] = useState<"player" | "lyrics">("player");
   const kawarpEnabled = useKawarpEnabled();
   const [kawarpShown, setKawarpShown] = useState(false);
   const [kawarpWasEnabled, setKawarpWasEnabled] = useState(kawarpEnabled);
@@ -487,11 +488,42 @@ export function FullscreenPlayer({
       <div className="absolute inset-0 z-[1] bg-black/40" />
 
       <div className="absolute inset-0 z-10 flex flex-col md:flex-row items-center justify-center p-4 md:p-0 overflow-y-auto md:overflow-hidden">
-        <div className="w-full flex-1 md:flex-1 flex flex-col items-center justify-center gap-4 md:gap-5">
-          <PlayerUiElements onClose={onClose} />
+        <div
+          className={cn(
+            "w-full flex-1 md:flex-1 flex flex-col items-center justify-center gap-4 md:gap-5",
+            mobileTab === "lyrics" ? "hidden md:flex" : "flex",
+          )}
+        >
+          <PlayerUiElements
+            onClose={onClose}
+            onToggleLyrics={() => setMobileTab("lyrics")}
+          />
         </div>
 
-        <div className="hidden md:flex flex-1 h-full min-h-0 pl-2 pr-6 flex-col relative">
+        <div
+          className={cn(
+            "flex-1 h-full min-h-0 pl-2 pr-6 flex-col relative",
+            mobileTab === "lyrics" ? "flex w-full !px-3 !pt-12 !pb-6" : "hidden md:flex",
+          )}
+        >
+          {mobileTab === "lyrics" && (
+            <div className="md:hidden flex items-center justify-between w-full mb-3 shrink-0">
+              <button
+                type="button"
+                onClick={() => setMobileTab("player")}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/10 hover:bg-white/20 active:scale-95 text-white text-[13px] font-semibold border-0 cursor-pointer backdrop-blur-md"
+              >
+                <LeftLine size={16} />
+                <span>Song</span>
+              </button>
+              <div className="text-center truncate max-w-[180px]">
+                <div className="text-white text-[13px] font-medium truncate">{currentTrack?.title}</div>
+                <div className="text-white/60 text-[11px] truncate">{currentTrack?.artists}</div>
+              </div>
+              <div className="w-[50px]" />
+            </div>
+          )}
+
           <div className="absolute top-[6px] left-1/2 -translate-x-1/2 z-30 pointer-events-none flex justify-center">
             <div className="relative inline-flex">
               <BetaVisualsWarning docked={showProviderIsland} />

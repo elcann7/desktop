@@ -112,7 +112,7 @@ export const TrackSearchField = memo(function TrackSearchField({
     <div
       role="search"
       data-no-window-drag
-      className={`flex h-[32px] w-[220px] items-center gap-[8px] rounded-[9px] px-[10px] text-text-primary ${className}`}
+      className={`flex h-[32px] w-full sm:w-[220px] min-w-0 max-w-[280px] items-center gap-[8px] rounded-[9px] px-[10px] text-text-primary ${className}`}
       style={{ fontFamily: "var(--font-inter), sans-serif" }}
     >
       <Search2Line size={16} className="shrink-0 text-text-secondary" />

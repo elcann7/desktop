@@ -75,6 +75,12 @@ export interface SessionState {
   isEqEnabled: boolean;
   eqGains: number[];
   eqCustomPresets: EqCustomPreset[];
+  crossfadeSeconds: number;
+  gaplessPlayback: boolean;
+  automix: boolean;
+  audioNormalization: boolean;
+  monoAudio: boolean;
+  offlineMode: boolean;
 }
 
 export type PlayerState = TransportState &
@@ -132,6 +138,12 @@ export interface PlayerStore extends PlayerState {
   setIsEqEnabled: (enabled: boolean) => void;
   setEqGains: (gains: number[]) => void;
   setEqCustomPresets: (presets: EqCustomPreset[]) => void;
+  setCrossfadeSeconds: (seconds: number) => void;
+  setGaplessPlayback: (enabled: boolean) => void;
+  setAutomix: (enabled: boolean) => void;
+  setAudioNormalization: (enabled: boolean) => void;
+  setMonoAudio: (enabled: boolean) => void;
+  setOfflineMode: (enabled: boolean) => void;
   resetSpeedAndPitch: () => void;
   clearQueue: () => void;
   resetPlayback: () => void;
@@ -204,6 +216,12 @@ export const usePlayerStore = create<PlayerStore>()(
       isEqEnabled: false,
       eqGains: FLAT_EQ,
       eqCustomPresets: [],
+      crossfadeSeconds: 4,
+      gaplessPlayback: true,
+      automix: true,
+      audioNormalization: true,
+      monoAudio: false,
+      offlineMode: false,
 
       dispatch: () => {
         // Implementation injected by PlayerEngine
@@ -262,6 +280,13 @@ export const usePlayerStore = create<PlayerStore>()(
         set({ eqGains: normalizeEqGains(eqGains) }),
       setEqCustomPresets: (eqCustomPresets: EqCustomPreset[]) =>
         set({ eqCustomPresets: normalizeEqCustomPresets(eqCustomPresets) }),
+      setCrossfadeSeconds: (crossfadeSeconds: number) =>
+        set({ crossfadeSeconds: Math.max(0, Math.min(12, Math.round(crossfadeSeconds))) }),
+      setGaplessPlayback: (gaplessPlayback: boolean) => set({ gaplessPlayback }),
+      setAutomix: (automix: boolean) => set({ automix }),
+      setAudioNormalization: (audioNormalization: boolean) => set({ audioNormalization }),
+      setMonoAudio: (monoAudio: boolean) => set({ monoAudio }),
+      setOfflineMode: (offlineMode: boolean) => set({ offlineMode }),
       resetSpeedAndPitch: () => set({ playbackRate: 1, pitchSemitones: 0 }),
       resetPlayback: () =>
         set({
@@ -368,6 +393,24 @@ export const usePlayerStore = create<PlayerStore>()(
           if (typeof state.isEqEnabled !== "boolean") {
             state.isEqEnabled = false;
           }
+          if (typeof state.crossfadeSeconds !== "number" || isNaN(state.crossfadeSeconds)) {
+            state.crossfadeSeconds = 4;
+          }
+          if (typeof state.gaplessPlayback !== "boolean") {
+            state.gaplessPlayback = true;
+          }
+          if (typeof state.automix !== "boolean") {
+            state.automix = true;
+          }
+          if (typeof state.audioNormalization !== "boolean") {
+            state.audioNormalization = true;
+          }
+          if (typeof state.monoAudio !== "boolean") {
+            state.monoAudio = false;
+          }
+          if (typeof state.offlineMode !== "boolean") {
+            state.offlineMode = false;
+          }
           state.eqGains = normalizeEqGains(state.eqGains);
           state.eqCustomPresets = normalizeEqCustomPresets(
             state.eqCustomPresets,
@@ -405,6 +448,12 @@ export const usePlayerStore = create<PlayerStore>()(
         isEqEnabled: state.isEqEnabled,
         eqGains: state.eqGains,
         eqCustomPresets: state.eqCustomPresets,
+        crossfadeSeconds: state.crossfadeSeconds,
+        gaplessPlayback: state.gaplessPlayback,
+        automix: state.automix,
+        audioNormalization: state.audioNormalization,
+        monoAudio: state.monoAudio,
+        offlineMode: state.offlineMode,
       }),
     },
   ),

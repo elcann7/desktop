@@ -1,9 +1,11 @@
 import { useEffect, useState } from "react";
 import { MusicNote, PlaybackSpeed } from "@solar-icons/react";
+import { AlignLeftLine } from "@mingcute/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCoverReady, CoverImage } from "@/features/covers";
 import { cn } from "@/shared/lib";
 import { usePlayerStore } from "../store/playerStore";
+import { useLyricsStore } from "@/features/lyrics";
 import { VolumePicker } from "./VolumePicker";
 import { FullscreenTrackInfo } from "./FullscreenTrackInfo";
 import { FullscreenTimeline } from "./FullscreenTimeline";
@@ -37,11 +39,15 @@ function useFullscreenColumnScale(): number {
 interface PlayerUiElementsProps {
   onDuration?: (duration: number) => void;
   onClose?: () => void;
+  onToggleLyrics?: () => void;
 }
 
-export function PlayerUiElements({ onClose }: PlayerUiElementsProps) {
+export function PlayerUiElements({ onClose, onToggleLyrics }: PlayerUiElementsProps) {
   const [speedOpen, setSpeedOpen] = useState(false);
   const track = usePlayerStore((s) => s.currentTrack);
+  const { syncedLines, activeLineIndex, plainLyrics, braccatoLyrics } = useLyricsStore();
+  const activeLine = syncedLines[activeLineIndex ?? 0]?.text || plainLyrics?.slice(0, 100) || "";
+  const hasAnyLyrics = braccatoLyrics.length > 0 || Boolean(plainLyrics && plainLyrics !== "[INSTRUMENTAL]");
   const playbackRate = usePlayerStore((s) => s.playbackRate ?? 1);
   const pitchSemitones = usePlayerStore((s) => s.pitchSemitones ?? 0);
   const isReverbEnabled = usePlayerStore((s) => s.isReverbEnabled ?? false);
@@ -110,33 +116,67 @@ export function PlayerUiElements({ onClose }: PlayerUiElementsProps) {
         <FullscreenTransportControls />
       </div>
 
-      <div className="mt-[20px] flex items-center justify-between gap-3 px-1">
-        <button
-          type="button"
-          onClick={() => setSpeedOpen((prev) => !prev)}
-          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-white text-[12px] font-medium transition-all backdrop-blur-md cursor-pointer ${
-            Math.abs(playbackRate - 1) > 0.01 || Math.abs(pitchSemitones) > 0.1 || isReverbEnabled
-              ? "bg-amber-500/30 border-amber-400/60 text-amber-300 font-semibold shadow-lg"
-              : "bg-white/10 hover:bg-white/20"
-          }`}
-        >
-          <PlaybackSpeed size={16} weight="Bold" />
-          <span>
-            {Math.abs(playbackRate - 1) > 0.01
-              ? `x${playbackRate.toFixed(2)}`
-              : isReverbEnabled
-                ? "Reverb"
-                : "Speed / Pitch"}
-          </span>
-        </button>
+      <div className="mt-[20px] flex items-center justify-between gap-2 px-1">
+        <div className="flex items-center gap-2">
+          <button
+            type="button"
+            onClick={() => setSpeedOpen((prev) => !prev)}
+            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-white text-[12px] font-medium transition-all backdrop-blur-md cursor-pointer ${
+              Math.abs(playbackRate - 1) > 0.01 || Math.abs(pitchSemitones) > 0.1 || isReverbEnabled
+                ? "bg-amber-500/30 border-amber-400/60 text-amber-300 font-semibold shadow-lg"
+                : "bg-white/10 hover:bg-white/20"
+            }`}
+          >
+            <PlaybackSpeed size={16} weight="Bold" />
+            <span>
+              {Math.abs(playbackRate - 1) > 0.01
+                ? `x${playbackRate.toFixed(2)}`
+                : isReverbEnabled
+                  ? "Reverb"
+                  : "Speed / Pitch"}
+            </span>
+          </button>
+
+          {onToggleLyrics && (
+            <button
+              type="button"
+              onClick={onToggleLyrics}
+              className="md:hidden flex items-center gap-1 px-3 py-1.5 rounded-full border border-white/20 text-white text-[12px] font-medium transition-all backdrop-blur-md cursor-pointer bg-white/10 hover:bg-white/20 active:scale-95"
+            >
+              <AlignLeftLine size={15} />
+              <span>Lyrics</span>
+            </button>
+          )}
+        </div>
 
         <VolumePicker
-          className="w-[45%]"
+          className="w-[38%]"
           size="sm"
           iconSize={20}
           iconClassName="text-white opacity-80 hover:opacity-100"
         />
       </div>
+
+      {/* Spotify Mobile Style Real-time Lyrics Card */}
+      {onToggleLyrics && (
+        <div
+          onClick={onToggleLyrics}
+          className="md:hidden mt-4 w-full rounded-2xl p-4 bg-white/[0.08] backdrop-blur-xl border border-white/10 cursor-pointer active:scale-[0.98] transition-all hover:bg-white/[0.12] select-none text-left"
+        >
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-[11px] font-bold tracking-wider uppercase text-white/70 flex items-center gap-1.5">
+              <AlignLeftLine size={13} className="text-emerald-400" />
+              Lyrics
+            </span>
+            <span className="text-[11px] font-medium text-emerald-400 bg-emerald-500/15 px-2.5 py-0.5 rounded-full">
+              Full screen
+            </span>
+          </div>
+          <p className="text-white/90 text-[14px] font-medium line-clamp-2 leading-relaxed m-0 italic">
+            {activeLine || (hasAnyLyrics ? "Tap to view synced lyrics..." : "Loading lyrics...")}
+          </p>
+        </div>
+      )}
 
       <AnimatePresence>
         {speedOpen && (

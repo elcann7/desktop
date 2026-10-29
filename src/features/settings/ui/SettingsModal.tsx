@@ -37,6 +37,7 @@ import {
   McpTab,
   YoutubeTab,
 } from "./tabs";
+import { MobileSpotifySettings } from "./MobileSpotifySettings";
 
 type TabId =
   | "Playback"
@@ -411,7 +412,14 @@ export default function SettingsModal() {
       maxWidth={900}
       className="p-0 h-[88vh] md:h-[700px] !max-h-[90vh] flex flex-col md:!flex-row overflow-hidden !bg-bg-surface/90 dark:!bg-bg-elevated/90 !backdrop-blur-[60px] !border-0"
     >
-      <aside className="w-full md:w-[248px] shrink-0 flex flex-col min-h-0 bg-transparent border-b md:border-b-0 md:border-r border-border-primary/30">
+      {/* Mobile Spotify-style Settings view */}
+      <div className="md:hidden flex flex-1 min-h-0 w-full h-full overflow-hidden">
+        <MobileSpotifySettings onClose={handleClose} />
+      </div>
+
+      {/* Desktop view */}
+      <div className="hidden md:flex flex-1 min-h-0 w-full h-full flex-row">
+        <aside className="w-full md:w-[248px] shrink-0 flex flex-col min-h-0 bg-transparent border-b md:border-b-0 md:border-r border-border-primary/30">
         <div className="px-[12px] pt-[12px] pb-[6px] flex items-center justify-between gap-2">
           <div className="relative flex-1 flex items-center">
             <span
@@ -650,6 +658,7 @@ export default function SettingsModal() {
             </motion.div>
           </div>
         </div>
+      </div>
       </div>
     </Dialog>
   );

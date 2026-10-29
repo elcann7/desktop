@@ -416,6 +416,7 @@ class PlayerEngine {
   public dispatch(command: PlayerCommand): void {
     switch (command.type) {
       case "PLAY_REQUESTED":
+        pitchShifter.resumeContext();
         void this.playTrack(
           command.track,
           command.queue,
@@ -427,15 +428,18 @@ class PlayerEngine {
         this.pause();
         break;
       case "RESUME_REQUESTED":
+        pitchShifter.resumeContext();
         this.resume();
         break;
       case "SEEK_COMMITTED":
         this.seek(command.positionMs);
         break;
       case "SKIP_NEXT":
+        pitchShifter.resumeContext();
         void this.skipNext(command.isAutoEnd);
         break;
       case "SKIP_PREVIOUS":
+        pitchShifter.resumeContext();
         void this.skipPrevious();
         break;
       case "SET_VOLUME":
@@ -448,6 +452,7 @@ class PlayerEngine {
         this.setPitchSemitones(command.semitones);
         break;
       case "TOGGLE_PLAY_PAUSE":
+        pitchShifter.resumeContext();
         this.togglePlayPause();
         break;
     }

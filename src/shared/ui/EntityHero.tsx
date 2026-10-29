@@ -76,8 +76,8 @@ export function EntityHero({
               actionsClassName,
             )}
           >
-            <div className="flex items-center gap-[8px]">{actions}</div>
-            <div className="flex items-center gap-[10px] md:gap-[12px]">
+            <div className="flex items-center gap-[8px] flex-wrap justify-center sm:justify-start">{actions}</div>
+            <div className="flex items-center gap-[8px] md:gap-[12px] flex-wrap justify-center sm:justify-end w-full sm:w-auto min-w-0">
               {trailingActions}
             </div>
           </div>

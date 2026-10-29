@@ -56,6 +56,10 @@ export class PlayerRuntime {
   // loaded / cached track fires waiting -> playing within milliseconds, and flipping
   // the status for that re-animated the play / pause button on every seek
   private waitingTimer: ReturnType<typeof setTimeout> | null = null;
+  private secondaryAudio: HTMLAudioElement | null = null;
+  private isCrossfading = false;
+  private crossfadeTimer: ReturnType<typeof setTimeout> | null = null;
+  private preloadedTrackId: string | null = null;
   public onEnded?: () => void;
   public onError?: (info: { trackId: string; message: string }) => void;
 
@@ -273,6 +277,46 @@ export class PlayerRuntime {
         this.recoveryHoldUntilMs = null;
         this.recoveryAttempts = 0;
       }
+
+      // Preload & Apple Music / Spotify Crossfade / Automix
+      const duration = audioEl.duration;
+      const currentTime = audioEl.currentTime;
+      if (Number.isFinite(duration) && duration > 10 && currentTime > 0) {
+        const remainingSec = duration - currentTime;
+        const store = usePlayerStore.getState();
+        const nextIndex = store.currentIndex + 1;
+        const nextTrack = store.queue[nextIndex];
+
+        // Background preload upcoming track
+        if (remainingSec <= 25 && nextTrack && this.preloadedTrackId !== nextTrack.id) {
+          this.preloadedTrackId = nextTrack.id;
+          void this.preloadTrack(nextTrack);
+        }
+
+        // Seamless transition
+        const crossfadeSec = Math.min(store.crossfadeSeconds ?? 0, 12);
+        if (
+          crossfadeSec > 0 &&
+          store.automix &&
+          remainingSec <= crossfadeSec &&
+          !this.isCrossfading &&
+          nextTrack
+        ) {
+          void this.startCrossfade(nextTrack, nextIndex, crossfadeSec);
+        } else if (
+          crossfadeSec === 0 &&
+          store.gaplessPlayback &&
+          remainingSec <= 0.25 &&
+          !this.isCrossfading &&
+          nextTrack
+        ) {
+          this.isCrossfading = true;
+          store.dispatch({ type: "SKIP_NEXT", isAutoEnd: true });
+          setTimeout(() => {
+            this.isCrossfading = false;
+          }, 800);
+        }
+      }
     });
 
     audioEl.addEventListener("durationchange", () => {
@@ -328,6 +372,7 @@ export class PlayerRuntime {
     audioEl.addEventListener("ended", () => {
       if (this.isResetting || audioEl !== this.audio) return;
       if (!this.currentTrackId) return;
+      if (this.isCrossfading) return;
       if (this.attachedTrackId !== this.currentTrackId) return;
 
       // Ensure the track truly finished playing (not an empty media load or teardown artefact)
@@ -525,6 +570,96 @@ export class PlayerRuntime {
     if (this.fadeTimer !== null) {
       clearTimeout(this.fadeTimer);
       this.fadeTimer = null;
+    }
+    if (this.crossfadeTimer !== null) {
+      clearTimeout(this.crossfadeTimer);
+      this.crossfadeTimer = null;
+      this.isCrossfading = false;
+    }
+  }
+
+  private async startCrossfade(
+    nextTrack: Track,
+    nextIndex: number,
+    crossfadeSec: number,
+  ): Promise<void> {
+    if (this.isCrossfading) return;
+    this.isCrossfading = true;
+
+    try {
+      if (!this.secondaryAudio) {
+        this.secondaryAudio = new Audio();
+        this.secondaryAudio.id = "liner-audio-secondary";
+        this.secondaryAudio.crossOrigin = "anonymous";
+        this.secondaryAudio.preload = "auto";
+        if (typeof document !== "undefined") {
+          document.body.appendChild(this.secondaryAudio);
+        }
+        this.setupAudioListeners(this.secondaryAudio);
+      }
+
+      const nextAudio = this.secondaryAudio;
+      const outgoingAudio = this.audio;
+      const store = usePlayerStore.getState();
+      const targetVolume = store.volume ?? 1;
+
+      let src = "";
+      const cached = await linerDb.getAudio(nextTrack.id);
+      if (cached && cached.blob) {
+        src = URL.createObjectURL(cached.blob);
+      } else {
+        const stream = await resolvePlaybackStream(nextTrack);
+        src = stream.blob ? URL.createObjectURL(stream.blob) : stream.url;
+      }
+
+      nextAudio.src = src;
+      nextAudio.currentTime = 0;
+      nextAudio.volume = 0;
+      this.currentTrackId = nextTrack.id;
+      this.attachedTrackId = nextTrack.id;
+
+      store.setCurrentTrack(nextTrack, nextIndex);
+      store.setPosition(0);
+      store.setDuration(nextTrack.durationMs ?? 0);
+      this.updateMediaSessionMetadata(nextTrack);
+
+      await nextAudio.play();
+
+      const durationMs = crossfadeSec * 1000;
+      const startTime = performance.now();
+
+      const step = () => {
+        const elapsed = performance.now() - startTime;
+        const progress = Math.min(1, elapsed / durationMs);
+
+        // Apple Music & Spotify Equal Power Crossfade Curve
+        const outgoingGain = Math.cos(progress * 0.5 * Math.PI);
+        const incomingGain = Math.sin(progress * 0.5 * Math.PI);
+
+        outgoingAudio.volume = Math.max(0, Math.min(1, targetVolume * outgoingGain));
+        nextAudio.volume = Math.max(0, Math.min(1, targetVolume * incomingGain));
+
+        if (progress < 1) {
+          this.crossfadeTimer = setTimeout(step, 24);
+        } else {
+          this.crossfadeTimer = null;
+          outgoingAudio.pause();
+          outgoingAudio.removeAttribute("src");
+          outgoingAudio.load();
+
+          this.audio = nextAudio;
+          this.secondaryAudio = outgoingAudio;
+          this.audio.volume = targetVolume;
+          this.isCrossfading = false;
+        }
+      };
+
+      step();
+    } catch (err) {
+      log("yellow", "playback", `crossfade fallback: ${String(err)}`);
+      this.isCrossfading = false;
+      const store = usePlayerStore.getState();
+      store.dispatch({ type: "SKIP_NEXT", isAutoEnd: true });
     }
   }
 
@@ -1047,8 +1182,10 @@ export class PlayerRuntime {
     const epoch = ++this.loadEpoch;
     this.loadAbortController?.abort();
     this.loadAbortController = null;
+    this.cancelFade();
 
     const targetVolume = usePlayerStore.getState().volume;
+    const effectiveVolume = targetVolume > 0 ? targetVolume : 1;
     usePlayerStore.getState().setStatus("playing");
     pitchShifter.resumeContext();
     this.applyPlaybackRateAndPitch();
@@ -1070,20 +1207,26 @@ export class PlayerRuntime {
       return;
     }
 
+    const isMobile =
+      typeof window !== "undefined" &&
+      (!window.linerElectron || (window as any).Capacitor?.isNativePlatform());
+
+    // iOS Safari / Mobile aggressive buffer drop recovery
+    if (isMobile && this.audio.readyState < 2 && currentTrack) {
+      void this.loadAndPlay(currentTrack, usePlayerStore.getState().positionMs);
+      return;
+    }
+
     if (this.audio.paused) {
-      const isMobile = typeof window !== "undefined" && (!window.linerElectron || (window as any).Capacitor?.isNativePlatform());
-      if (!isMobile) {
-        this.audio.volume = 0;
-      } else {
-        this.audio.volume = targetVolume;
-      }
+      this.audio.volume = effectiveVolume;
       const playPromise = this.audio.play();
       this.activePlayPromise = playPromise;
       playPromise
         .then(() => {
           if (epoch !== this.loadEpoch) return;
+          this.audio.volume = effectiveVolume;
           if (!isMobile) {
-            this.fadeVolume(targetVolume, 180);
+            this.fadeVolume(effectiveVolume, 180);
           }
         })
         .catch((error) => {
@@ -1114,7 +1257,7 @@ export class PlayerRuntime {
           if (epoch === this.loadEpoch) this.activePlayPromise = null;
         });
     } else {
-      this.fadeVolume(targetVolume, 180);
+      this.audio.volume = effectiveVolume;
     }
   }
 
