@@ -1102,7 +1102,12 @@ export class PlayerRuntime {
         `stream attached: ${streamCodec} ${streamBitrate} bps (${track.title})`,
       );
 
-      if (this.audio.readyState < 3) {
+      const isMobileWeb =
+        typeof window !== "undefined" &&
+        (!window.linerElectron ||
+          Boolean((window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.()));
+
+      if (!isMobileWeb && this.audio.readyState < 3) {
         await new Promise<void>((resolve) => {
           const timeout = setTimeout(resolve, 3000);
           const onCanPlay = () => {

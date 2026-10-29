@@ -61,13 +61,30 @@ export function extractAudioFormats(playerResponse: unknown): AudioFormat[] {
     .filter((format): format is AudioFormat => Boolean(format));
 }
 
+export function detectPreferredCodec(): "opus" | "aac" {
+  if (typeof navigator !== "undefined" && typeof window !== "undefined") {
+    // If running in Apple WebKit / iOS Safari / iPhone / iPad, always prefer AAC (itag 140)
+    const isApple = /iPad|iPhone|iPod|Macintosh/.test(navigator.userAgent);
+    if (isApple && !window.linerElectron) {
+      return "aac";
+    }
+    const audio = document.createElement("audio");
+    const canPlayWebm = audio.canPlayType('audio/webm; codecs="opus"');
+    if (!canPlayWebm) {
+      return "aac";
+    }
+  }
+  return "opus";
+}
+
 export function selectBestAudioFormat(
   formats: AudioFormat[],
   preferredCodec?: "opus" | "aac",
 ): AudioFormat | null {
   if (formats.length === 0) return null;
+  const codec = preferredCodec ?? detectPreferredCodec();
   const order =
-    preferredCodec === "aac" ? [140, 139, 251, 250, 249] : PREFERRED_ITAGS;
+    codec === "aac" ? [140, 139, 251, 250, 249] : PREFERRED_ITAGS;
   for (const itag of order) {
     const match = formats.find((format) => format.itag === itag);
     if (match) return match;

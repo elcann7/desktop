@@ -2,7 +2,6 @@ import { Innertube, Platform } from "youtubei.js/web";
 import { getClientVisitorData } from "../session/visitorSession";
 import { InnertubeError } from "./innertubeClient";
 import { log } from "@/shared/utils/logger";
-import { mintBrowserPoToken } from "./browserPoToken";
 import {
   selectBestAudioFormat,
   toResolvedStream,
@@ -81,13 +80,7 @@ async function mintContentPoToken(videoId: string): Promise<string | undefined> 
       log("yellow", "playback", `electron PoToken minting failed: ${String(err)}`);
     }
   }
-
-  try {
-    return await mintBrowserPoToken(videoId);
-  } catch (err) {
-    log("yellow", "playback", `browser PoToken minting bypassed/failed: ${String(err)}`);
-    return undefined;
-  }
+  return undefined;
 }
 
 function throwIfAborted(signal?: AbortSignal): void {
