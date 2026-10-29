@@ -6,7 +6,14 @@ import {
   type YoutubeAuthTokens,
 } from "./tvTokens";
 
-const DEVICE_CODE_URL = "https://www.youtube.com/o/oauth2/device/code";
+const isBrowser =
+  typeof window !== "undefined" &&
+  !window.linerElectron &&
+  !(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
+
+const DEVICE_CODE_URL = isBrowser
+  ? "/o/oauth2/device/code"
+  : "https://www.youtube.com/o/oauth2/device/code";
 const TV_SCOPE =
   "http://gdata.youtube.com https://www.googleapis.com/auth/youtube-paid-content";
 const DEVICE_GRANT = "http://oauth.net/grant_type/device/1.0";

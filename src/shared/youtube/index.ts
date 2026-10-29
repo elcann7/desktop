@@ -6,6 +6,7 @@ export {
   resolveDirectAudioStream,
   toVideoId,
   STREAMS_REFUSED_MESSAGE,
+  TV_ACCOUNT_PROFILE,
   type ResolvedAudioStream,
   type ResolveAudioOptions,
 } from "./innertube/innertubeAudio";

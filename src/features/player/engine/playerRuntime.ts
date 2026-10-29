@@ -1173,13 +1173,12 @@ export class PlayerRuntime {
         (!window.linerElectron || (window as any).Capacitor?.isNativePlatform());
 
       if (
-        !isMobile &&
         isBotCheckError(error) &&
         !isYoutubeSignedIn() &&
         !isYoutubeSignInDeclined() &&
         prefersSignInPrompt()
       ) {
-        log("yellow", "playback", "youtube sign-in required, pausing");
+        log("yellow", "playback", "youtube sign-in required, pausing and showing prompt");
         usePlayerStore.getState().setStatus("paused");
         requestYoutubeSignIn();
         return;

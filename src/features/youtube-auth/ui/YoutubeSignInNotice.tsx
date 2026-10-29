@@ -21,9 +21,6 @@ export default function YoutubeSignInNotice() {
   const retry = useYoutubeSignInStore((state) => state.retry);
   const failed = phase === "error";
 
-  if (typeof window !== "undefined" && (!window.linerElectron || window.innerWidth < 768)) {
-    return null;
-  }
   if (typeof document === "undefined") return null;
 
   return createPortal(
@@ -38,9 +35,9 @@ export default function YoutubeSignInNotice() {
           exit={{ opacity: 0, y: -12, scale: 0.98 }}
           transition={{ type: "spring", stiffness: 420, damping: 34 }}
           className={cn(
-            "fixed left-1/2 top-[44px] z-[9998] -translate-x-1/2",
-            "flex w-[600px] max-w-[calc(100vw-24px)] items-stretch gap-[20px] overflow-hidden p-[18px]",
-            "rounded-[26px] bg-bg-elevated/55 shadow-[0_24px_80px_rgba(0,0,0,0.35)]",
+            "fixed left-1/2 top-[24px] md:top-[44px] z-[9998] -translate-x-1/2",
+            "flex w-[600px] max-w-[calc(100vw-24px)] flex-col md:flex-row items-center md:items-stretch gap-[16px] md:gap-[20px] overflow-y-auto max-h-[90vh] p-[18px]",
+            "rounded-[26px] bg-bg-elevated/95 dark:bg-[#18181c]/95 shadow-[0_24px_80px_rgba(0,0,0,0.5)] border border-border-primary/40",
             "backdrop-blur-[40px] backdrop-saturate-150",
           )}
         >
@@ -49,11 +46,11 @@ export default function YoutubeSignInNotice() {
             <TrackBadge />
             <h2 className="mt-[14px] text-[18px] font-[600] leading-[1.25] tracking-[-0.01em] text-text-primary">
               {t("youtube_auth.title") ||
-                "Sign in to YouTube to keep listening"}
+                "YouTube ilə Giriş Edin"}
             </h2>
-            <p className="mt-[8px] text-[14px] leading-[1.45] text-text-secondary">
+            <p className="mt-[8px] text-[13.5px] leading-[1.45] text-text-secondary">
               {t("youtube_auth.description") ||
-                "YouTube blocks audio streams without sign-in (BotGuard check). Signing in with your Google/YouTube account confirms you are a real listener and lifts the limits."}
+                "YouTube Music mahnı axını üçün 1 dəfə hesab təsdiqi tələb edir (BotGuard). Aşağıdakı kodla daxil olduqda bütün məhdudiyyətlər qalxır və mahnılar problemsiz oxunur."}
             </p>
             <div className="mt-[16px] flex flex-wrap gap-[8px]">
               <button
@@ -67,8 +64,8 @@ export default function YoutubeSignInNotice() {
                 )}
               >
                 {failed
-                  ? t("youtube_auth.retry") || "Try again"
-                  : t("youtube_auth.waiting") || "Waiting for sign-in…"}
+                  ? t("youtube_auth.retry") || "Yenidən yoxla"
+                  : t("youtube_auth.waiting") || "Giriş gözlənilir…"}
               </button>
               <button
                 type="button"
@@ -79,7 +76,7 @@ export default function YoutubeSignInNotice() {
                   "dark:bg-white/[0.1] dark:hover:bg-white/[0.15]",
                 )}
               >
-                {t("youtube_auth.not_now") || "Not now"}
+                {t("youtube_auth.not_now") || "İndi yox"}
               </button>
             </div>
           </div>

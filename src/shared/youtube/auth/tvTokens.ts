@@ -1,7 +1,14 @@
 import { asRecord, numberValue, stringValue } from "@/shared/utils/json";
 import type { TvOauthClient } from "./tvOauthClient";
 
-const TOKEN_URL = "https://www.youtube.com/o/oauth2/token";
+const isBrowser =
+  typeof window !== "undefined" &&
+  !window.linerElectron &&
+  !(window as unknown as { Capacitor?: { isNativePlatform?: () => boolean } }).Capacitor?.isNativePlatform?.();
+
+const TOKEN_URL = isBrowser
+  ? "/o/oauth2/token"
+  : "https://www.youtube.com/o/oauth2/token";
 
 export interface YoutubeAuthTokens {
   accessToken: string;

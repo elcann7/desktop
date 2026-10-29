@@ -5,6 +5,7 @@ import {
   openTvAudioStream,
   resolveTvAudioStream,
   toVideoId,
+  TV_ACCOUNT_PROFILE,
 } from "@/shared/youtube";
 import {
   resolveSoundCloudStream,
@@ -56,12 +57,21 @@ async function resolveYoutubeAudio(
 ): Promise<PlaybackStream> {
   if (isYoutubeSignedIn() && prefersAccountPlayback()) {
     try {
-      const stream = await resolveTvAudio(videoId, progressive, signal);
-      log("cyan", "playback", `playing youtube tv audio for ${videoId}`);
-      return stream;
+      if (typeof window !== "undefined" && window.linerElectron) {
+        const stream = await resolveTvAudio(videoId, progressive, signal);
+        log("cyan", "playback", `playing youtube tv audio for ${videoId}`);
+        return stream;
+      }
+      log("cyan", "playback", `playing authenticated youtube account audio for ${videoId}`);
+      return fromInnertubeStream(
+        await resolveDirectAudioStream(videoId, {
+          signal,
+          profiles: [TV_ACCOUNT_PROFILE],
+        }),
+      );
     } catch (error) {
       if (isAbortError(error, signal)) throw error;
-      log("yellow", "playback", `youtube tv playback failed: ${String(error)}`);
+      log("yellow", "playback", `youtube account playback failed: ${String(error)}`);
     }
   }
   return fromInnertubeStream(

@@ -15,6 +15,7 @@ export {
   ANDROID_VR_PROFILE,
   PLAYBACK_PROFILES,
   TV_PROFILE,
+  TV_ACCOUNT_PROFILE,
   VISIONOS_PROFILE,
 } from "./playbackProfiles";
 

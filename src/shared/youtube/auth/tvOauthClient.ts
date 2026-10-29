@@ -6,6 +6,12 @@ const BASE_SCRIPT_PATTERN = /\/s\/_\/kabuki\/_\/js\/[^'"\\]+?m=base/;
 const CREDENTIALS_PATTERN =
   /clientId:"(?<clientId>[^"]+)",[^"]*?:"(?<clientSecret>[^"]+)"/;
 
+const DEFAULT_CLIENT: TvOauthClient = {
+  clientId:
+    "861556708454-d6dlm3lh05idd8npek18k6be8ba3oc68.apps.googleusercontent.com",
+  clientSecret: "SboVhoG9s0rNafixCSGGKXAT",
+};
+
 export interface TvOauthClient {
   clientId: string;
   clientSecret: string;
@@ -38,11 +44,14 @@ export function parseTvOauthClient(baseScript: string): TvOauthClient | null {
 }
 
 async function loadTvOauthClient(signal?: AbortSignal): Promise<TvOauthClient> {
-  const scriptUrl = parseBaseScriptUrl(await fetchTvText(TV_PAGE_URL, signal));
-  if (!scriptUrl) throw new Error("YouTube TV base script was not found.");
-  const client = parseTvOauthClient(await fetchTvText(scriptUrl, signal));
-  if (!client) throw new Error("YouTube TV OAuth client was not found.");
-  return client;
+  try {
+    const scriptUrl = parseBaseScriptUrl(await fetchTvText(TV_PAGE_URL, signal));
+    if (!scriptUrl) return DEFAULT_CLIENT;
+    const client = parseTvOauthClient(await fetchTvText(scriptUrl, signal));
+    return client ?? DEFAULT_CLIENT;
+  } catch {
+    return DEFAULT_CLIENT;
+  }
 }
 
 export function getTvOauthClient(signal?: AbortSignal): Promise<TvOauthClient> {
