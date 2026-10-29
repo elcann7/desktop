@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { MusicNote } from "@solar-icons/react";
+import { MusicNote, PlaybackSpeed } from "@solar-icons/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { useCoverReady, CoverImage } from "@/features/covers";
 import { cn } from "@/shared/lib";
@@ -8,6 +8,7 @@ import { VolumePicker } from "./VolumePicker";
 import { FullscreenTrackInfo } from "./FullscreenTrackInfo";
 import { FullscreenTimeline } from "./FullscreenTimeline";
 import { FullscreenTransportControls } from "./FullscreenTransportControls";
+import { SpeedPitchPicker } from "./SpeedPitchPicker";
 import {
   BASE_COLUMN_WIDTH,
   fullscreenColumnScale,
@@ -39,7 +40,11 @@ interface PlayerUiElementsProps {
 }
 
 export function PlayerUiElements({ onClose }: PlayerUiElementsProps) {
+  const [speedOpen, setSpeedOpen] = useState(false);
   const track = usePlayerStore((s) => s.currentTrack);
+  const playbackRate = usePlayerStore((s) => s.playbackRate ?? 1);
+  const pitchSemitones = usePlayerStore((s) => s.pitchSemitones ?? 0);
+  const isReverbEnabled = usePlayerStore((s) => s.isReverbEnabled ?? false);
   const coverUrl = track?.coverUrl || "";
   const isCoverLoaded = useCoverReady(coverUrl);
   const scale = useFullscreenColumnScale();
@@ -105,14 +110,57 @@ export function PlayerUiElements({ onClose }: PlayerUiElementsProps) {
         <FullscreenTransportControls />
       </div>
 
-      <div className="mt-[22px] flex justify-center">
+      <div className="mt-[20px] flex items-center justify-between gap-3 px-1">
+        <button
+          type="button"
+          onClick={() => setSpeedOpen((prev) => !prev)}
+          className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full border border-white/20 text-white text-[12px] font-medium transition-all backdrop-blur-md cursor-pointer ${
+            Math.abs(playbackRate - 1) > 0.01 || Math.abs(pitchSemitones) > 0.1 || isReverbEnabled
+              ? "bg-amber-500/30 border-amber-400/60 text-amber-300 font-semibold shadow-lg"
+              : "bg-white/10 hover:bg-white/20"
+          }`}
+        >
+          <PlaybackSpeed size={16} weight="Bold" />
+          <span>
+            {Math.abs(playbackRate - 1) > 0.01
+              ? `x${playbackRate.toFixed(2)}`
+              : isReverbEnabled
+                ? "Reverb"
+                : "Speed / Pitch"}
+          </span>
+        </button>
+
         <VolumePicker
-          className="w-[60%]"
+          className="w-[45%]"
           size="sm"
-          iconSize={22}
+          iconSize={20}
           iconClassName="text-white opacity-80 hover:opacity-100"
         />
       </div>
+
+      <AnimatePresence>
+        {speedOpen && (
+          <motion.div
+            initial={{ opacity: 0, y: 16, scale: 0.96 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.96 }}
+            transition={{ duration: 0.18 }}
+            className="fixed inset-x-4 bottom-8 z-[100] max-w-[340px] mx-auto rounded-[20px] p-4 bg-[#141416]/95 border border-white/15 backdrop-blur-3xl shadow-2xl text-left"
+          >
+            <div className="flex items-center justify-between mb-3 pb-2 border-b border-white/10">
+              <span className="text-[14px] font-semibold text-white">Speed, Pitch & Reverb</span>
+              <button
+                type="button"
+                onClick={() => setSpeedOpen(false)}
+                className="text-[12px] text-white/70 hover:text-white px-2.5 py-1 rounded-md bg-white/10 border-0 cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
+            <SpeedPitchPicker onClose={() => setSpeedOpen(false)} />
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }

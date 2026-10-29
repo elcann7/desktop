@@ -9,6 +9,7 @@ import ExplicitBadge from "@/shared/ui/ExplicitBadge";
 import CoverImage from "@/features/covers/ui/CoverImage";
 import { isCoverReady } from "@/features/covers/lib/coverArt";
 import type { TrackArtist } from "@/shared/types";
+import { TrackDownloadButton } from "./TrackDownloadButton";
 
 export interface SongCardProps {
   id?: string;
@@ -44,6 +45,7 @@ export interface SongCardProps {
 }
 
 function SongCard({
+  id,
   title,
   artists,
   artistId,
@@ -273,6 +275,18 @@ function SongCard({
           >
             {duration}
           </span>
+        )}
+        {id && (
+          <TrackDownloadButton
+            track={{
+              id,
+              title,
+              artists: artists || "",
+              coverUrl,
+              durationMs: 0,
+            }}
+            size={18}
+          />
         )}
         {menuItems && menuItems.length > 0 && (
           <DropdownMenu

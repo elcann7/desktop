@@ -69,6 +69,16 @@ export default defineConfig(({ command, mode }) => {
     server: {
       port: 5173,
       strictPort: true,
+      proxy: {
+        "/youtubei": {
+          target: "https://music.youtube.com",
+          changeOrigin: true,
+          headers: {
+            origin: "https://music.youtube.com",
+            referer: "https://music.youtube.com",
+          },
+        },
+      },
     },
     build: {
       outDir: "dist",

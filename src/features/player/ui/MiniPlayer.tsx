@@ -559,10 +559,26 @@ function MiniPlayer({
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 10, scale: 0.985 }}
             transition={{ duration: 0.16, ease: [0.22, 1, 0.36, 1] }}
-            className="absolute bottom-[74px] z-[92] w-[300px] rounded-[14px] p-[16px] bg-black/[0.05] backdrop-blur-2xl backdrop-saturate-150 dark:bg-white/[0.07] prevent-seek"
-            style={speedPopupStyle}
+            className="fixed md:absolute bottom-[74px] left-1/2 -translate-x-1/2 md:left-auto md:translate-x-0 z-[99] w-[min(340px,calc(100vw-24px))] rounded-[16px] p-[16px] bg-bg-surface/95 dark:bg-[#151518]/95 backdrop-blur-3xl border border-border-primary/50 shadow-2xl prevent-seek"
+            style={
+              typeof window !== "undefined" && window.innerWidth >= 768
+                ? speedPopupStyle
+                : undefined
+            }
             onPointerDown={(e) => e.stopPropagation()}
           >
+            <div className="flex md:hidden items-center justify-between mb-2 pb-1.5 border-b border-border-primary/30">
+              <span className="text-[13px] font-semibold text-text-primary">
+                Slowed / Speed & Pitch
+              </span>
+              <button
+                type="button"
+                onClick={() => setSpeedOpen(false)}
+                className="text-[12px] text-accent-primary font-medium px-2 py-0.5 bg-transparent border-0 cursor-pointer"
+              >
+                Done
+              </button>
+            </div>
             <SpeedPitchPicker onClose={() => setSpeedOpen(false)} />
           </motion.div>
         )}
@@ -1041,6 +1057,24 @@ function MiniPlayer({
               style={{ cursor: "pointer" }}
             >
               <SkipNext size={18} weight="Bold" />
+            </button>
+            <button
+              type="button"
+              aria-label="Speed and Pitch"
+              title="Speed and Pitch"
+              className={`md:hidden ${iconButtonClass} ${
+                speedOpen ||
+                Math.abs((player.playbackRate ?? 1) - 1) > 0.001 ||
+                Math.abs(player.pitchSemitones ?? 0) > 0.001 ||
+                player.isReverbEnabled
+                  ? "text-amber-400 font-bold"
+                  : "text-text-secondary hover:text-text-primary"
+              }`}
+              onPointerDown={(e) => e.stopPropagation()}
+              onClick={() => setSpeedOpen((prev) => !prev)}
+              style={{ cursor: "pointer" }}
+            >
+              <PlaybackSpeed size={18} weight="Bold" />
             </button>
           </div>
         </div>

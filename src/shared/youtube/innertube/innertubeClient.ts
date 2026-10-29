@@ -104,7 +104,15 @@ export async function postInnertube(
   const authorization = profile.acceptsOAuth
     ? await getYoutubeAuthorization(options.signal).catch(() => null)
     : null;
-  const url = `${profile.origin}/youtubei/v1/${endpoint}?prettyPrint=false`;
+  let url = `${profile.origin}/youtubei/v1/${endpoint}?prettyPrint=false`;
+  if (
+    typeof window !== "undefined" &&
+    !window.linerElectron &&
+    !(window as any).Capacitor?.isNativePlatform() &&
+    window.location.origin
+  ) {
+    url = `/youtubei/v1/${endpoint}?prettyPrint=false`;
+  }
 
   const send = async (): Promise<Response> => {
     const visitorData = await getClientVisitorData().catch(() => "");

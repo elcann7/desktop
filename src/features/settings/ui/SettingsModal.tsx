@@ -66,12 +66,21 @@ const TAB_ICONS: Record<TabId, React.ComponentType<any>> = {
 
 type TabGroupKey = "player" | "interface" | "integrations" | "application";
 
-const TAB_GROUPS: { labelKey: TabGroupKey; ids: TabId[] }[] = [
-  { labelKey: "player", ids: ["Playback", "Shortcuts"] },
-  { labelKey: "interface", ids: ["Appearance", "Overlay"] },
-  { labelKey: "integrations", ids: ["Youtube", "Discord", "Mcp"] },
-  { labelKey: "application", ids: ["Storage", "About"] },
-];
+const isDesktopPlatform =
+  typeof window !== "undefined" && Boolean(window.linerElectron);
+
+const TAB_GROUPS: { labelKey: TabGroupKey; ids: TabId[] }[] = isDesktopPlatform
+  ? [
+      { labelKey: "player", ids: ["Playback", "Shortcuts"] },
+      { labelKey: "interface", ids: ["Appearance", "Overlay"] },
+      { labelKey: "integrations", ids: ["Youtube", "Discord", "Mcp"] },
+      { labelKey: "application", ids: ["Storage", "About"] },
+    ]
+  : [
+      { labelKey: "player", ids: ["Playback"] },
+      { labelKey: "interface", ids: ["Appearance"] },
+      { labelKey: "application", ids: ["Storage", "About"] },
+    ];
 
 const SETTING_ITEMS: { tabId: TabId; titleKey: string; descKey?: string }[] = [
   // Playback
@@ -540,46 +549,7 @@ export default function SettingsModal() {
             ))
           )}
 
-          <div className="flex flex-col">
-            <p
-              className="text-text-tertiary text-[11px] font-[500] m-0 px-[10px] pb-[4px] pt-[2px]"
-              style={font}
-            >
-              {t("settings.groups.help")}
-            </p>
-            <div className={navGroupClass}>
-              <button
-                type="button"
-                onClick={() =>
-                  openExternal(
-                    "https://github.com/tryliner/desktop/blob/main/README.md",
-                  )
-                }
-                className="w-full flex items-center gap-[10px] px-[10px] py-[7px] rounded-[10px] border-0 bg-transparent text-text-secondary hover:bg-black/[0.04] dark:hover:bg-white/[0.05] hover:text-text-primary cursor-pointer text-left transition-colors"
-                style={{ ...font, fontSize: "13px" }}
-              >
-                <Book2
-                  size={18}
-                  weight="Bold"
-                  className="text-text-tertiary shrink-0"
-                />
-                <span className="leading-none">{t("settings.docs")}</span>
-              </button>
-              <button
-                type="button"
-                onClick={() => openExternal("https://t.me/liner_app?direct")}
-                className="w-full flex items-center gap-[10px] px-[10px] py-[7px] rounded-[10px] border-0 bg-transparent text-text-secondary hover:bg-black/[0.04] dark:hover:bg-white/[0.05] hover:text-text-primary cursor-pointer text-left transition-colors"
-                style={{ ...font, fontSize: "13px" }}
-              >
-                <QuestionCircle
-                  size={18}
-                  weight="Bold"
-                  className="text-text-tertiary shrink-0"
-                />
-                <span className="leading-none">{t("settings.support")}</span>
-              </button>
-            </div>
-          </div>
+
         </nav>
 
         <div className="hidden md:block shrink-0 p-[12px] pt-[8px]">

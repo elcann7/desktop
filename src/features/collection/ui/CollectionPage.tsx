@@ -43,6 +43,7 @@ import { useClassicSurfaces } from "@/features/settings/store/customizationStore
 import type { Track } from "@/shared/types";
 import { useTranslation } from "@/languages";
 import { useModalStore } from "@/features/library";
+import { PlaylistDownloadButton } from "@/features/player/ui/PlaylistDownloadButton";
 import { buildShareUrl } from "@/shared/utils/share";
 import { useExternalItems } from "@/features/library/hooks";
 import { useCollection } from "../hooks/useCollection";
@@ -400,6 +401,10 @@ function CollectionContent() {
                       >
                         <LuShuffle size={18} />
                       </Button>
+                      <PlaylistDownloadButton
+                        tracks={data.tracks}
+                        playlistId={id || "collection"}
+                      />
                     </>
                   }
                   trailingActions={
