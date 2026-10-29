@@ -17,15 +17,27 @@ export async function assertStreamReachable(
   contentLength: number | undefined,
   signal?: AbortSignal,
 ): Promise<void> {
+  if (
+    typeof window !== "undefined" &&
+    (!window.linerElectron || (window as any).Capacitor?.isNativePlatform())
+  ) {
+    return;
+  }
+
   const probe = new URL(url);
   const offset =
     contentLength && contentLength > PROBE_OFFSET ? PROBE_OFFSET : 0;
   probe.searchParams.set("range", `${offset}-${offset}`);
-  const response = await fetch(probe.toString(), { signal });
-  await response.body?.cancel().catch(() => undefined);
-  if (!response.ok)
-    throw new InnertubeError(
-      `${REJECTED_PREFIX} ${response.status}`,
-      response.status,
-    );
+  try {
+    const response = await fetch(probe.toString(), { signal });
+    await response.body?.cancel().catch(() => undefined);
+    if (!response.ok)
+      throw new InnertubeError(
+        `${REJECTED_PREFIX} ${response.status}`,
+        response.status,
+      );
+  } catch (err) {
+    if (err instanceof InnertubeError) throw err;
+    return;
+  }
 }

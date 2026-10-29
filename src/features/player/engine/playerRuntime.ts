@@ -627,22 +627,26 @@ export class PlayerRuntime {
       incomingAudio.currentTime = 0;
       incomingAudio.volume = 0;
 
-      // Swap active audio reference IMMEDIATELY so timeupdate & position tracking
-      // belong exclusively to the incoming track from 0:00!
-      this.audio = incomingAudio;
-      this.secondaryAudio = outgoingAudio;
-      this.currentTrackId = nextTrack.id;
-      this.attachedTrackId = nextTrack.id;
-
-      store.setCurrentTrack(nextTrack, nextIndex);
-      store.setPosition(0);
-      store.setDuration(nextTrack.durationMs ?? 0);
-      this.updateMediaSessionMetadata(nextTrack);
+      // Pre-buffer incoming track so playback starts with 0ms latency
+      await new Promise<void>((resolve) => {
+        if (incomingAudio.readyState >= 3) {
+          resolve();
+          return;
+        }
+        const timeout = setTimeout(resolve, 2500);
+        const onReady = () => {
+          clearTimeout(timeout);
+          incomingAudio.removeEventListener("canplay", onReady);
+          resolve();
+        };
+        incomingAudio.addEventListener("canplay", onReady, { once: true });
+      });
 
       await incomingAudio.play();
 
       const durationMs = crossfadeSec * 1000;
       const startTime = performance.now();
+      let swapped = false;
 
       const step = () => {
         if (!this.isCrossfading) return;
@@ -658,11 +662,35 @@ export class PlayerRuntime {
           incomingAudio.volume = Math.max(0, Math.min(1, targetVolume * incomingGain));
         } catch {}
 
+        // Swap primary track reference and update UI when the incoming track dominates (progress >= 0.5)
+        if (progress >= 0.5 && !swapped) {
+          swapped = true;
+          this.audio = incomingAudio;
+          this.secondaryAudio = outgoingAudio;
+          this.currentTrackId = nextTrack.id;
+          this.attachedTrackId = nextTrack.id;
+
+          store.setCurrentTrack(nextTrack, nextIndex);
+          store.setPosition(Math.round(incomingAudio.currentTime * 1000));
+          store.setDuration(nextTrack.durationMs ?? 0);
+          this.updateMediaSessionMetadata(nextTrack);
+        }
+
         if (progress < 1) {
           this.crossfadeTimer = setTimeout(step, 24);
         } else {
           this.crossfadeTimer = null;
           this.isCrossfading = false;
+          if (!swapped) {
+            this.audio = incomingAudio;
+            this.secondaryAudio = outgoingAudio;
+            this.currentTrackId = nextTrack.id;
+            this.attachedTrackId = nextTrack.id;
+            store.setCurrentTrack(nextTrack, nextIndex);
+            store.setPosition(Math.round(incomingAudio.currentTime * 1000));
+            store.setDuration(nextTrack.durationMs ?? 0);
+            this.updateMediaSessionMetadata(nextTrack);
+          }
           try {
             outgoingAudio.pause();
             outgoingAudio.removeAttribute("src");

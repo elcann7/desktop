@@ -873,10 +873,10 @@ export default function AppFrame({ children }: AppFrameProps) {
           <span>Search</span>
         </button>
         <Link
-          to="/collection"
+          to="/library"
           className={cn(
             "flex flex-col items-center justify-center gap-1 flex-1 py-1 text-[10.5px] font-medium transition-colors no-underline",
-            location.pathname?.startsWith("/collection") && !searchOpen && !settingsOpen
+            location.pathname?.startsWith("/library") && !searchOpen && !settingsOpen
               ? "text-accent-primary"
               : "text-text-secondary"
           )}

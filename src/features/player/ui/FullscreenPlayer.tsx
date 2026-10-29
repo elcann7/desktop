@@ -507,26 +507,34 @@ export function FullscreenPlayer({
           )}
         >
           {mobileTab === "lyrics" && (
-            <div className="md:hidden flex items-center justify-between w-full mb-3 shrink-0 pt-2 z-40">
-              <button
-                type="button"
-                onClick={() => setMobileTab("player")}
-                className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white text-[13px] font-medium border-0 cursor-pointer backdrop-blur-md"
-              >
-                <LeftLine size={16} />
-                <span>Song</span>
-              </button>
-              <div className="flex-1 mx-2 text-center min-w-0">
-                <div className="text-white text-[13px] font-semibold truncate leading-tight">{currentTrack?.title}</div>
-                <div className="text-white/60 text-[11px] truncate leading-tight">{currentTrack?.artists}</div>
+            <div className="md:hidden flex flex-col w-full mb-2 shrink-0 pt-2 z-40 gap-2">
+              <div className="flex items-center justify-between w-full">
+                <button
+                  type="button"
+                  onClick={() => setMobileTab("player")}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white text-[13px] font-medium border-0 cursor-pointer backdrop-blur-md"
+                >
+                  <LeftLine size={16} />
+                  <span>Song</span>
+                </button>
+                <div className="flex-1 mx-2 text-center min-w-0">
+                  <div className="text-white text-[13px] font-semibold truncate leading-tight">{currentTrack?.title}</div>
+                  <div className="text-white/60 text-[11px] truncate leading-tight">{currentTrack?.artists}</div>
+                </div>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  className="inline-flex items-center justify-center w-[32px] h-[32px] rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white/90 border-0 cursor-pointer backdrop-blur-md"
+                >
+                  <DownLine size={18} />
+                </button>
               </div>
-              <button
-                type="button"
-                onClick={onClose}
-                className="inline-flex items-center justify-center w-[32px] h-[32px] rounded-full bg-white/15 hover:bg-white/25 active:scale-95 text-white/90 border-0 cursor-pointer backdrop-blur-md"
-              >
-                <DownLine size={18} />
-              </button>
+
+              {showProviderIsland && (
+                <div className="flex justify-center items-center w-full scale-90 sm:scale-100 origin-center pointer-events-auto">
+                  <LyricsProviderIsland />
+                </div>
+              )}
             </div>
           )}
 

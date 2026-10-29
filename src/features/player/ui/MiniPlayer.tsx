@@ -708,7 +708,7 @@ function MiniPlayer({
               : "md:grid-cols-[286px_minmax(0,1fr)]"
           } ${!usesRoundedStyle && !embedded ? "pb-[4px]" : ""}`}
         >
-          <div className="flex h-full items-center gap-[12px] md:gap-[16px] px-[12px] md:px-[18px] pt-[1px] pointer-events-none cursor-default max-w-[calc(100%-120px)] md:max-w-none">
+          <div className="flex h-full items-center gap-[10px] md:gap-[16px] px-[10px] md:px-[18px] pt-[1px] pointer-events-none cursor-default max-w-[calc(100%-150px)] md:max-w-none min-w-0">
             <div
               role="button"
               tabIndex={0}
@@ -786,7 +786,7 @@ function MiniPlayer({
               <button
                 type="button"
                 aria-label={isLiked ? "Unlike" : "Like"}
-                className={`${iconButtonClass} shrink-0 transition-colors duration-150 pointer-events-auto prevent-seek ${
+                className={`${iconButtonClass} hidden md:inline-flex shrink-0 transition-colors duration-150 pointer-events-auto prevent-seek ${
                   isLiked
                     ? "text-accent-primary"
                     : "text-text-secondary hover:text-text-primary"
@@ -994,11 +994,27 @@ function MiniPlayer({
           </div>
         </div>
 
-        <div className="pointer-events-none absolute inset-y-0 right-[12px] md:inset-0 flex items-center justify-end md:justify-center">
+        <div className="pointer-events-none absolute inset-y-0 right-[8px] md:inset-0 flex items-center justify-end md:justify-center">
           <div
-            className="pointer-events-auto flex items-center gap-[6px] md:gap-[8px] prevent-seek cursor-default"
+            className="pointer-events-auto flex items-center gap-[4px] md:gap-[8px] prevent-seek cursor-default"
             onPointerDown={(e) => e.stopPropagation()}
           >
+            {!isLocal && (
+              <button
+                type="button"
+                aria-label={isLiked ? "Unlike" : "Like"}
+                className={`${iconButtonClass} md:hidden inline-flex items-center justify-center shrink-0 transition-colors duration-150 pointer-events-auto ${
+                  isLiked
+                    ? "text-accent-primary"
+                    : "text-text-secondary hover:text-text-primary"
+                }`}
+                onPointerDown={(e) => e.stopPropagation()}
+                onClick={handleLikeToggle}
+                style={{ cursor: "pointer" }}
+              >
+                {isLiked ? <HeartFill size={19} /> : <HeartLine size={19} />}
+              </button>
+            )}
             <button
               type="button"
               aria-label="Previous track"
@@ -1076,6 +1092,53 @@ function MiniPlayer({
             >
               <PlaybackSpeed size={18} weight="Bold" />
             </button>
+          </div>
+        </div>
+
+        {/* Scrubbable Mini Progress Bar across the bottom */}
+        <div
+          role="slider"
+          aria-label="Seek track"
+          className="absolute left-0 right-0 bottom-0 h-[8px] flex items-end cursor-pointer z-40 select-none prevent-seek"
+          style={{ touchAction: "none" }}
+          onPointerDown={(e) => {
+            e.stopPropagation();
+            const bar = e.currentTarget;
+            const rect = bar.getBoundingClientRect();
+            if (!rect.width || !durationMs) return;
+
+            const seekAt = (clientX: number) => {
+              const r = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+              setScrubRatio(r);
+              playerEngine.seek(r * durationMs);
+            };
+
+            seekAt(e.clientX);
+
+            const onMove = (ev: PointerEvent) => {
+              seekAt(ev.clientX);
+            };
+
+            const onUp = () => {
+              setScrubRatio(null);
+              window.removeEventListener("pointermove", onMove);
+              window.removeEventListener("pointerup", onUp);
+              window.removeEventListener("pointercancel", onUp);
+            };
+
+            window.addEventListener("pointermove", onMove, { passive: false });
+            window.addEventListener("pointerup", onUp);
+            window.addEventListener("pointercancel", onUp);
+          }}
+        >
+          <div className="w-full h-[3px] bg-black/10 dark:bg-white/15 overflow-hidden">
+            <div
+              className="h-full bg-accent-primary"
+              style={{
+                width: `${activeProgress * 100}%`,
+                transition: scrubRatio !== null ? "none" : "width 100ms linear",
+              }}
+            />
           </div>
         </div>
       </div>
