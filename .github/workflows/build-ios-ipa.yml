@@ -37,15 +37,15 @@ jobs:
       - name: Sync Capacitor iOS
         run: npx cap sync ios
 
-      - name: Build Xcode Archive (Unsigned)
+      - name: Build Xcode Project (Unsigned)
         run: |
           cd ios/App
-          xcodebuild clean archive \
+          xcodebuild clean build \
             -project App.xcodeproj \
             -scheme App \
             -configuration Release \
             -destination 'generic/platform=iOS' \
-            -archivePath build/App.xcarchive \
+            -derivedDataPath build \
             CODE_SIGNING_ALLOWED=NO \
             CODE_SIGNING_REQUIRED=NO \
             CODE_SIGN_IDENTITY="" \
@@ -55,7 +55,7 @@ jobs:
         run: |
           cd ios/App
           mkdir -p Payload
-          cp -r build/App.xcarchive/Products/Applications/App.app Payload/Liner.app
+          cp -r build/Build/Products/Release-iphoneos/App.app Payload/Liner.app
           zip -r Liner.ipa Payload
           echo "IPA package created successfully."
           ls -lh Liner.ipa
