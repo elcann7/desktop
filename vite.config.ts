@@ -78,6 +78,14 @@ export default defineConfig(({ command, mode }) => {
             referer: "https://music.youtube.com",
           },
         },
+        "/s/player": {
+          target: "https://www.youtube.com",
+          changeOrigin: true,
+          headers: {
+            origin: "https://www.youtube.com",
+            referer: "https://www.youtube.com",
+          },
+        },
         "/api/jnn": {
           target: "https://www.youtube.com",
           changeOrigin: true,

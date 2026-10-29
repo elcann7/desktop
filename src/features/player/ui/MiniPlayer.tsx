@@ -779,7 +779,7 @@ function MiniPlayer({
               : "md:grid-cols-[286px_minmax(0,1fr)]"
           } ${!usesRoundedStyle && !embedded ? "pb-[4px]" : ""}`}
         >
-          <div className="flex h-full items-center gap-[10px] md:gap-[16px] px-[10px] md:px-[18px] pt-[1px] pointer-events-none cursor-default max-w-[calc(100%-150px)] md:max-w-none min-w-0">
+          <div className="flex h-full items-center gap-[8px] md:gap-[16px] px-[10px] md:px-[18px] pt-[1px] pointer-events-none cursor-default max-w-[calc(100%-140px)] md:max-w-none min-w-0">
             <div
               role="button"
               tabIndex={0}
@@ -857,7 +857,7 @@ function MiniPlayer({
               <button
                 type="button"
                 aria-label={isLiked ? "Unlike" : "Like"}
-                className={`hidden md:inline-flex ${baseIconButtonClass} shrink-0 transition-colors duration-150 pointer-events-auto prevent-seek ${
+                className={`inline-flex ${baseIconButtonClass} shrink-0 transition-colors duration-150 pointer-events-auto prevent-seek ${
                   isLiked
                     ? "text-accent-primary"
                     : "text-text-secondary hover:text-text-primary"
@@ -1070,22 +1070,6 @@ function MiniPlayer({
             className="pointer-events-auto flex items-center gap-[4px] md:gap-[8px] prevent-seek cursor-default"
             onPointerDown={(e) => e.stopPropagation()}
           >
-            {!isLocal && (
-              <button
-                type="button"
-                aria-label={isLiked ? "Unlike" : "Like"}
-                className={`inline-flex md:hidden ${baseIconButtonClass} items-center justify-center shrink-0 transition-colors duration-150 pointer-events-auto ${
-                  isLiked
-                    ? "text-accent-primary"
-                    : "text-text-secondary hover:text-text-primary"
-                }`}
-                onPointerDown={(e) => e.stopPropagation()}
-                onClick={handleLikeToggle}
-                style={{ cursor: "pointer" }}
-              >
-                {isLiked ? <HeartFill size={19} /> : <HeartLine size={19} />}
-              </button>
-            )}
             <button
               type="button"
               aria-label="Previous track"

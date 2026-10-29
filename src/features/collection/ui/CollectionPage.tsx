@@ -253,8 +253,23 @@ function CollectionContent() {
 
   if (!loading && !data) {
     return (
-      <div className="h-full w-full bg-transparent flex items-center justify-center">
-        <span className="text-text-secondary">{t("collection.not_found")}</span>
+      <div className="h-full w-full bg-transparent flex flex-col items-center justify-center gap-3 px-4 text-center select-none">
+        <div className="w-12 h-12 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-text-tertiary">
+          <PlaylistFill size={24} />
+        </div>
+        <span className="text-text-primary text-[16px] font-semibold">
+          {t("collection.not_found")}
+        </span>
+        <p className="text-text-secondary text-[13px] max-w-[320px] m-0">
+          Bu pleylist və ya albom tapılmadı və ya silinmiş ola bilər.
+        </p>
+        <button
+          type="button"
+          onClick={() => window.history.back()}
+          className="mt-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/15 active:scale-95 text-white text-[13px] font-medium border-0 cursor-pointer transition-all"
+        >
+          Geri qayıt
+        </button>
       </div>
     );
   }

@@ -43,28 +43,34 @@ export function SettingRow({
 
   return (
     <div
-      className={`${rowCard} flex min-h-[46px] items-center justify-between gap-[12px] py-[10px]`}
+      className={`${rowCard} flex flex-col sm:flex-row sm:items-center sm:justify-between min-h-[46px] gap-[10px] sm:gap-[12px] py-[10px]`}
     >
-      {icon ? (
-        <span className="flex shrink-0 text-text-primary">{icon}</span>
-      ) : null}
-      <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
-        <span
-          className="truncate text-text-primary text-[14px] font-[500] leading-snug"
-          style={font}
-        >
-          {title}
-        </span>
-        {explained && description ? (
+      <div className="flex items-start sm:items-center gap-[12px] min-w-0 flex-1">
+        {icon ? (
+          <span className="flex shrink-0 text-text-primary mt-0.5 sm:mt-0">{icon}</span>
+        ) : null}
+        <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
           <span
-            className="max-w-[420px] text-text-tertiary text-[12px] leading-[1.4]"
+            className="text-text-primary text-[14px] font-[500] leading-snug"
             style={font}
           >
-            {description}
+            {title}
           </span>
-        ) : null}
+          {explained && description ? (
+            <span
+              className="max-w-[420px] text-text-tertiary text-[12px] leading-[1.4]"
+              style={font}
+            >
+              {description}
+            </span>
+          ) : null}
+        </div>
       </div>
-      {control ? <div className="shrink-0">{control}</div> : null}
+      {control ? (
+        <div className="shrink-0 self-end sm:self-center w-full sm:w-auto flex justify-end">
+          {control}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -165,7 +171,7 @@ export function SegmentedControl<T extends string>({
     <div
       role={ariaLabel ? "group" : undefined}
       aria-label={ariaLabel}
-      className={`inline-flex w-fit shrink-0 items-center gap-[6px] transition-opacity ${
+      className={`inline-flex w-full sm:w-fit flex-wrap shrink-0 items-center justify-end gap-[6px] transition-opacity ${
         disabled ? "opacity-50 cursor-not-allowed pointer-events-none" : ""
       }`}
     >
@@ -178,7 +184,7 @@ export function SegmentedControl<T extends string>({
             disabled={disabled}
             onClick={() => !disabled && onChange(opt.value)}
             aria-pressed={isActive}
-            className={`inline-flex h-[32px] items-center whitespace-nowrap rounded-[10px] border-0 px-[14px] text-[13px] leading-none transition-colors ${
+            className={`flex-1 sm:flex-none inline-flex h-[32px] items-center justify-center whitespace-nowrap rounded-[10px] border-0 px-[12px] sm:px-[14px] text-[12.5px] sm:text-[13px] leading-none transition-colors ${
               disabled
                 ? isActive
                   ? "bg-text-primary/40 text-bg-primary/80 cursor-not-allowed"

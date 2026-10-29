@@ -15,7 +15,7 @@ export default function LibraryTabs({ activeTab, onChange }: LibraryTabsProps) {
 
   const rawDownloaded = t("library.tab_downloaded");
   const downloadedLabel =
-    rawDownloaded && rawDownloaded !== "library.tab_downloaded"
+    rawDownloaded && !rawDownloaded.includes("tab_downloaded")
       ? rawDownloaded
       : "Yüklənənlər";
 

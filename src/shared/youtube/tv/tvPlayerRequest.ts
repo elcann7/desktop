@@ -32,7 +32,16 @@ export async function requestTvPlayer(
   request: TvPlayerRequest,
 ): Promise<unknown> {
   const { session } = request;
-  const response = await fetch(PLAYER_URL, {
+  let url = PLAYER_URL;
+  if (
+    typeof window !== "undefined" &&
+    !window.linerElectron &&
+    !(window as any).Capacitor?.isNativePlatform?.() &&
+    window.location.origin
+  ) {
+    url = "/youtubei/v1/player?prettyPrint=false";
+  }
+  const response = await fetch(url, {
     method: "POST",
     signal: request.signal,
     headers: {

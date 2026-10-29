@@ -186,51 +186,53 @@ export function MobileSpotifySettings({ onClose }: MobileSpotifySettingsProps) {
               </div>
 
               {/* YouTube Account Status Card */}
-              <div className="p-4 rounded-2xl bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border border-red-500/20 flex items-center justify-between">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-10 h-10 rounded-xl bg-red-600/20 border border-red-500/30 flex items-center justify-center shrink-0">
-                    <YoutubeFill size={22} className="text-red-500" />
-                  </div>
-                  <div className="min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-[15px] font-bold text-white truncate">
-                        YouTube Hesabı
-                      </span>
-                      {ytSignedIn ? (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                          Qoşulub
-                        </span>
-                      ) : (
-                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
-                          Qoşulmayıb
-                        </span>
-                      )}
+              <div className="p-4 rounded-2xl bg-gradient-to-br from-red-600/15 via-red-950/20 to-black/40 border border-red-500/25 flex flex-col gap-3">
+                <div className="flex items-center justify-between gap-3">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="w-10 h-10 rounded-xl bg-red-600/20 border border-red-500/30 flex items-center justify-center shrink-0">
+                      <YoutubeFill size={22} className="text-red-500" />
                     </div>
-                    <div className="text-[12px] text-white/50 truncate mt-0.5">
-                      {ytSignedIn
-                        ? ytAccount?.name || ytAccount?.email || "Hesab aktivdir"
-                        : "Mahnıların limitsiz oxunması üçün"}
+                    <div className="min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="text-[15px] font-bold text-white whitespace-nowrap">
+                          YouTube Hesabı
+                        </span>
+                        {ytSignedIn ? (
+                          <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 whitespace-nowrap">
+                            Qoşulub
+                          </span>
+                        ) : (
+                          <span className="text-[10.5px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30 whitespace-nowrap">
+                            Qoşulmayıb
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[12px] text-white/55 mt-0.5 leading-snug">
+                        {ytSignedIn
+                          ? ytAccount?.name || ytAccount?.email || "Hesab aktivdir (Limitsiz oxutma)"
+                          : "Musiqilərin limitsiz və problemsiz oxunması üçün"}
+                      </div>
                     </div>
                   </div>
-                </div>
 
-                {ytSignedIn ? (
-                  <button
-                    type="button"
-                    onClick={() => signOutYoutube()}
-                    className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white/70 hover:text-white text-[12px] font-semibold border-0 cursor-pointer shrink-0 transition-colors"
-                  >
-                    Çıxış
-                  </button>
-                ) : (
-                  <button
-                    type="button"
-                    onClick={() => showYoutubeSignIn("manual")}
-                    className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-[12.5px] font-bold border-0 cursor-pointer shrink-0 shadow-lg shadow-red-600/30 active:scale-95 transition-all"
-                  >
-                    Qoşul
-                  </button>
-                )}
+                  {ytSignedIn ? (
+                    <button
+                      type="button"
+                      onClick={() => signOutYoutube()}
+                      className="px-3.5 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white/80 hover:text-white text-[12px] font-semibold border-0 cursor-pointer shrink-0 transition-colors"
+                    >
+                      Çıxış
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => showYoutubeSignIn("manual")}
+                      className="px-4 py-2 rounded-xl bg-red-600 hover:bg-red-500 text-white text-[12.5px] font-bold border-0 cursor-pointer shrink-0 shadow-lg shadow-red-600/30 active:scale-95 transition-all"
+                    >
+                      Qoşul
+                    </button>
+                  )}
+                </div>
               </div>
 
               {/* Navigation List */}

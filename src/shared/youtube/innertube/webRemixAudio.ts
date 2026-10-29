@@ -30,13 +30,38 @@ function installPlayerEvaluator(): void {
   evaluatorInstalled = true;
 }
 
+const isBrowser =
+  typeof window !== "undefined" &&
+  !window.linerElectron &&
+  !(window as any).Capacitor?.isNativePlatform?.();
+
+function createSessionFetch() {
+  return (input: RequestInfo | URL, init?: RequestInit) => {
+    let url =
+      typeof input === "string"
+        ? input
+        : input instanceof URL
+          ? input.toString()
+          : (input as Request).url;
+
+    if (isBrowser) {
+      if (url.includes("/youtubei/")) {
+        url = url.replace(/https?:\/\/[^/]+\/youtubei\//, "/youtubei/");
+      } else if (url.includes("/s/player/")) {
+        url = url.replace(/https?:\/\/[^/]+\/s\/player\//, "/s/player/");
+      }
+    }
+    return fetch(url, init);
+  };
+}
+
 async function createSession(visitorData: string): Promise<WebRemixSession> {
   const innertube = await Innertube.create({
     visitor_data: visitorData,
     user_agent: navigator.userAgent,
     generate_session_locally: true,
     retrieve_player: true,
-    fetch: (input, init) => fetch(input, init),
+    fetch: createSessionFetch(),
   });
   return { visitorData, innertube };
 }

@@ -48,7 +48,7 @@ export default function LibraryControls({
   const rawDownloadedSearch = t("library.search_downloaded");
   const downloadedSearch =
     rawDownloadedSearch &&
-    rawDownloadedSearch !== "library.search_downloaded"
+    !rawDownloadedSearch.includes("search_downloaded")
       ? rawDownloadedSearch
       : "Yüklənmiş mahnılarda axtar...";
 
