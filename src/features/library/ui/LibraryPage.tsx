@@ -469,10 +469,10 @@ export default function LibraryPage() {
       importJob?.status === "awaiting_decision");
 
   return (
-    <div className="relative h-full w-full overflow-hidden">
+    <div className="relative h-full w-full max-w-full overflow-hidden overflow-x-hidden">
       <div
         ref={scrollContainerRef}
-        className="h-full w-full overflow-y-auto bg-transparent pb-(--page-inset-bottom)"
+        className="h-full w-full max-w-full overflow-y-auto overflow-x-hidden bg-transparent pb-(--page-inset-bottom)"
       >
         <div className="relative z-20 bg-transparent">
           <div className="px-[12px] pt-[36px] pb-[10px]">

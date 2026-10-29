@@ -299,6 +299,7 @@ export class PlayerRuntime {
           crossfadeSec > 0 &&
           store.automix &&
           remainingSec <= crossfadeSec &&
+          remainingSec >= 1.5 &&
           !this.isCrossfading &&
           nextTrack
         ) {
@@ -372,7 +373,13 @@ export class PlayerRuntime {
     audioEl.addEventListener("ended", () => {
       if (this.isResetting || audioEl !== this.audio) return;
       if (!this.currentTrackId) return;
-      if (this.isCrossfading) return;
+      if (this.isCrossfading) {
+        log("cyan", "audio", "ended during crossfade — advancing cleanly");
+        this.killSecondaryAudio();
+        const state = usePlayerStore.getState();
+        state.dispatch({ type: "SKIP_NEXT", isAutoEnd: true });
+        return;
+      }
       if (this.attachedTrackId !== this.currentTrackId) return;
 
       // Ensure the track truly finished playing (not an empty media load or teardown artefact)
@@ -615,21 +622,25 @@ export class PlayerRuntime {
       const targetVolume = store.volume ?? 1;
 
       let src = "";
+      if (!this.isCrossfading) return;
       const cached = await linerDb.getAudio(nextTrack.id);
+      if (!this.isCrossfading) return;
       if (cached && cached.blob) {
         src = URL.createObjectURL(cached.blob);
       } else {
         const stream = await resolvePlaybackStream(nextTrack);
+        if (!this.isCrossfading) return;
         src = stream.blob ? URL.createObjectURL(stream.blob) : stream.url;
       }
 
+      if (!this.isCrossfading) return;
       incomingAudio.src = src;
       incomingAudio.currentTime = 0;
       incomingAudio.volume = 0;
 
       // Pre-buffer incoming track so playback starts with 0ms latency
       await new Promise<void>((resolve) => {
-        if (incomingAudio.readyState >= 3) {
+        if (!this.isCrossfading || incomingAudio.readyState >= 3) {
           resolve();
           return;
         }
@@ -642,7 +653,9 @@ export class PlayerRuntime {
         incomingAudio.addEventListener("canplay", onReady, { once: true });
       });
 
+      if (!this.isCrossfading) return;
       await incomingAudio.play();
+      if (!this.isCrossfading) return;
 
       const durationMs = crossfadeSec * 1000;
       const startTime = performance.now();
@@ -1318,15 +1331,27 @@ export class PlayerRuntime {
       this.killSecondaryAudio();
     }
     if (!this.audio.src || this.audio.src === window.location.href) return;
+    const duration = this.audio.duration;
+    const targetSec = Math.max(0, positionMs / 1000);
+
+    // If user dragged to the very end (within 0.5s of track length), trigger next track directly
+    if (duration > 0 && targetSec >= Math.max(0, duration - 0.5)) {
+      log("cyan", "audio", "seeked to end — skipping to next track");
+      this.killSecondaryAudio();
+      const state = usePlayerStore.getState();
+      state.dispatch({ type: "SKIP_NEXT", isAutoEnd: true });
+      return;
+    }
+
     try {
       if (this.audio.readyState >= 1) {
-        this.audio.currentTime = positionMs / 1000;
+        this.audio.currentTime = targetSec;
       } else {
         this.audio.addEventListener(
           "loadedmetadata",
           () => {
             try {
-              this.audio.currentTime = positionMs / 1000;
+              this.audio.currentTime = targetSec;
             } catch {}
           },
           { once: true },
@@ -1335,6 +1360,7 @@ export class PlayerRuntime {
     } catch {
       // Ignore seek error if media not yet ready
     }
+    usePlayerStore.getState().setPosition(positionMs);
   }
 
   private async downloadAudioBlob(

@@ -45,22 +45,29 @@ export default function LibraryControls({
     notifyLibraryChanged();
   };
 
+  const rawDownloadedSearch = t("library.search_downloaded");
+  const downloadedSearch =
+    rawDownloadedSearch &&
+    rawDownloadedSearch !== "library.search_downloaded"
+      ? rawDownloadedSearch
+      : "Yüklənmiş mahnılarda axtar...";
+
   const placeholderByTab: Record<LibraryTab, string> = {
     all: t("library.search_all"),
     playlists: t("library.search_playlists"),
     albums: t("library.search_albums"),
     artists: t("library.search_artists"),
-    downloaded: t("library.search_downloaded") || "Search downloaded songs...",
+    downloaded: downloadedSearch,
   };
 
-  const iconButtonClass = `${HERO_BUTTON_CLASS} ${HERO_GLASS_BUTTON_CLASS} !w-[52px] !p-0 text-text-primary`;
+  const iconButtonClass = `${HERO_BUTTON_CLASS} ${HERO_GLASS_BUTTON_CLASS} !w-[44px] sm:!w-[52px] !p-0 text-text-primary shrink-0`;
 
   return (
-    <div className="flex flex-wrap items-center gap-[8px]">
+    <div className="flex items-center gap-[8px] w-full sm:w-auto max-w-full">
       <div
         role="search"
         data-no-window-drag
-        className={`flex h-[32px] w-[220px] items-center gap-[8px] rounded-[9px] px-[10px] text-text-primary ${HERO_GLASS_CLASS}`}
+        className={`flex h-[32px] flex-1 sm:w-[220px] sm:flex-initial min-w-[120px] items-center gap-[8px] rounded-[9px] px-[10px] text-text-primary ${HERO_GLASS_CLASS}`}
         style={{ fontFamily: "var(--font-inter), sans-serif" }}
       >
         <Search2Line size={16} className="shrink-0 text-text-secondary" />

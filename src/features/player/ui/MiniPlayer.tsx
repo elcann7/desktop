@@ -361,8 +361,10 @@ function MiniPlayer({
     ? "!bg-black/[0.08] dark:!bg-white/[0.14] !text-text-primary"
     : "!bg-[#dfdfe1] dark:!bg-[#292929] !text-text-primary";
 
-  const iconButtonClass =
-    "inline-flex h-[30px] w-[30px] items-center justify-center rounded-md text-text-secondary transition-colors duration-150 hover:bg-black/[0.05] dark:hover:bg-white/[0.09] hover:text-text-primary active:scale-[0.96] border-none bg-transparent cursor-pointer";
+  const baseIconButtonClass =
+    "h-[30px] w-[30px] items-center justify-center rounded-md text-text-secondary transition-colors duration-150 hover:bg-black/[0.05] dark:hover:bg-white/[0.09] hover:text-text-primary active:scale-[0.96] border-none bg-transparent cursor-pointer";
+
+  const iconButtonClass = `inline-flex ${baseIconButtonClass}`;
 
   const clearVolumeHoverTimer = useCallback(() => {
     if (volumeHoverCloseTimerRef.current) {
@@ -523,6 +525,74 @@ function MiniPlayer({
   const [scrubRatio, setScrubRatio] = useState<number | null>(null);
   const activeProgress = scrubRatio !== null ? scrubRatio : progress;
 
+  const touchStartXRef = useRef<number | null>(null);
+  const touchStartYRef = useRef<number | null>(null);
+  const touchDeltaXRef = useRef<number>(0);
+  const isSwipingRef = useRef<boolean>(false);
+  const [swipeOffset, setSwipeOffset] = useState<number>(0);
+
+  const handleTouchStart = useCallback((e: React.TouchEvent) => {
+    const target = e.target as HTMLElement | null;
+    if (
+      target?.closest(
+        "button, a, input, [role='button'], [role='slider'], .prevent-seek",
+      )
+    ) {
+      touchStartXRef.current = null;
+      return;
+    }
+    touchStartXRef.current = e.touches[0].clientX;
+    touchStartYRef.current = e.touches[0].clientY;
+    touchDeltaXRef.current = 0;
+    isSwipingRef.current = false;
+  }, []);
+
+  const handleTouchMove = useCallback((e: React.TouchEvent) => {
+    if (touchStartXRef.current === null || touchStartYRef.current === null)
+      return;
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const dx = currentX - touchStartXRef.current;
+    const dy = currentY - touchStartYRef.current;
+
+    if (!isSwipingRef.current) {
+      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.2) {
+        isSwipingRef.current = true;
+      } else if (Math.abs(dy) > 12) {
+        touchStartXRef.current = null;
+        return;
+      }
+    }
+
+    if (isSwipingRef.current) {
+      touchDeltaXRef.current = dx;
+      setSwipeOffset(Math.max(-70, Math.min(70, dx * 0.45)));
+    }
+  }, []);
+
+  const handleTouchEnd = useCallback(() => {
+    const dx = touchDeltaXRef.current;
+    const swiped = isSwipingRef.current && Math.abs(dx) > 35;
+    setSwipeOffset(0);
+
+    if (swiped) {
+      if (dx < -35) {
+        // Swiped Left -> Next Track
+        void playerEngine.skipNext();
+      } else if (dx > 35) {
+        // Swiped Right -> Previous Track
+        void playerEngine.skipPrevious();
+      }
+    }
+
+    setTimeout(() => {
+      touchStartXRef.current = null;
+      touchStartYRef.current = null;
+      touchDeltaXRef.current = 0;
+      isSwipingRef.current = false;
+    }, 120);
+  }, []);
+
   return (
     <div
       ref={miniPlayerRootRef}
@@ -614,44 +684,32 @@ function MiniPlayer({
                 }`
               : "rounded-3xl border-[0.5px] border-border-tertiary bg-bg-primary"
         }`}
-        onPointerDown={(e) => {
-          if (e.button !== 0) return;
+        style={{
+          transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined,
+          transition: swipeOffset === 0 ? "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)" : "none",
+        }}
+        onTouchStart={handleTouchStart}
+        onTouchMove={handleTouchMove}
+        onTouchEnd={handleTouchEnd}
+        onTouchCancel={() => {
+          setSwipeOffset(0);
+          touchStartXRef.current = null;
+          isSwipingRef.current = false;
+        }}
+        onClick={(e) => {
+          if (isSwipingRef.current || Math.abs(touchDeltaXRef.current) > 15) {
+            e.stopPropagation();
+            return;
+          }
           const target = e.target as Element | null;
           if (
-            !target ||
-            target.closest?.(
+            target?.closest?.(
               "button, a, input, [role='button'], [role='slider'], .prevent-seek",
             )
           ) {
             return;
           }
-          const card = e.currentTarget;
-          const rect = card.getBoundingClientRect();
-          if (!rect.width || !durationMs) return;
-
-          const calcRatio = (clientX: number) =>
-            Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
-
-          const initialRatio = calcRatio(e.clientX);
-          setScrubRatio(initialRatio);
-
-          const onMove = (ev: PointerEvent) => {
-            const r = calcRatio(ev.clientX);
-            setScrubRatio(r);
-          };
-
-          const onUp = (ev: PointerEvent) => {
-            const finalRatio = calcRatio(ev.clientX);
-            setScrubRatio(null);
-            playerEngine.seek(finalRatio * durationMs);
-            window.removeEventListener("pointermove", onMove);
-            window.removeEventListener("pointerup", onUp);
-            window.removeEventListener("pointercancel", onUp);
-          };
-
-          window.addEventListener("pointermove", onMove);
-          window.addEventListener("pointerup", onUp);
-          window.addEventListener("pointercancel", onUp);
+          onFullscreenOpen?.();
         }}
       >
         {usesBackgroundProgress && (
@@ -786,7 +844,7 @@ function MiniPlayer({
               <button
                 type="button"
                 aria-label={isLiked ? "Unlike" : "Like"}
-                className={`${iconButtonClass} hidden md:inline-flex shrink-0 transition-colors duration-150 pointer-events-auto prevent-seek ${
+                className={`hidden md:inline-flex ${baseIconButtonClass} shrink-0 transition-colors duration-150 pointer-events-auto prevent-seek ${
                   isLiked
                     ? "text-accent-primary"
                     : "text-text-secondary hover:text-text-primary"
@@ -1003,7 +1061,7 @@ function MiniPlayer({
               <button
                 type="button"
                 aria-label={isLiked ? "Unlike" : "Like"}
-                className={`${iconButtonClass} md:hidden inline-flex items-center justify-center shrink-0 transition-colors duration-150 pointer-events-auto ${
+                className={`inline-flex md:hidden ${baseIconButtonClass} items-center justify-center shrink-0 transition-colors duration-150 pointer-events-auto ${
                   isLiked
                     ? "text-accent-primary"
                     : "text-text-secondary hover:text-text-primary"

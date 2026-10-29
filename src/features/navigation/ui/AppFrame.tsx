@@ -773,10 +773,10 @@ export default function AppFrame({ children }: AppFrameProps) {
           />
         </aside>
 
-        <div className="flex-1 flex flex-col min-w-0 h-full relative gap-1.5 overflow-hidden">
+        <div className="flex-1 flex flex-col min-w-0 h-full w-full max-w-full relative gap-1.5 overflow-hidden overflow-x-hidden">
           <main
             className={cn(
-              "flex-1 min-w-0 flex flex-col relative h-full overflow-hidden [--page-inset-top:56px]",
+              "flex-1 min-w-0 flex flex-col relative h-full w-full max-w-full overflow-hidden overflow-x-hidden [--page-inset-top:56px]",
               "rounded-xl",
               shouldShowMiniPlayer && hasPageBackdrop
                 ? "[--page-inset-bottom:64px] [--floating-inset-bottom:70px]"
@@ -785,13 +785,13 @@ export default function AppFrame({ children }: AppFrameProps) {
           >
             <div
               ref={mainScrollRef}
-              className={`h-full ${
+              className={`h-full w-full max-w-full overflow-x-hidden ${
                 searchOpen || isFullscreenPlayer
                   ? "overflow-hidden"
                   : "overflow-y-auto"
               }`}
             >
-              <div className="h-full w-full">
+              <div className="h-full w-full max-w-full overflow-x-hidden">
                 {isFullscreenRoute ? shellChildrenRef.current : children}
               </div>
             </div>
