@@ -72,7 +72,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header(
         className,
       )}
     >
-      <div className="w-[58px] h-full flex items-center justify-center shrink-0">
+      <div className="hidden md:flex w-[58px] h-full items-center justify-center shrink-0">
         <Link
           to="/"
           data-no-window-drag
@@ -91,7 +91,7 @@ export const Header = forwardRef<HTMLElement, HeaderProps>(function Header(
       </div>
 
       {showBack && (
-        <div className="flex-1 min-w-0 flex items-center pl-[22px]">
+        <div className="flex-1 min-w-0 flex items-center pl-3 md:pl-[22px]">
           <BackButton />
         </div>
       )}

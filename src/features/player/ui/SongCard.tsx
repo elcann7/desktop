@@ -158,7 +158,7 @@ function SongCard({
       role={onPlay ? "button" : undefined}
       tabIndex={onPlay ? 0 : undefined}
     >
-      <div className={`flex items-center ${gapClass} min-w-0`}>
+      <div className={`flex-1 flex items-center ${gapClass} min-w-0`}>
         {trackNumber !== undefined ? (
           <div
             className={`flex ${imageSizeClass} shrink-0 items-center justify-center ${titleSizeClass} text-text-tertiary`}
@@ -196,13 +196,13 @@ function SongCard({
           </div>
         )}
 
-        <div className="min-w-0 flex flex-col gap-[2px]">
-          <div className="flex items-center gap-[8px]">
+        <div className="min-w-0 flex-1 flex flex-col gap-[2px]">
+          <div className="flex items-center gap-[8px] min-w-0">
             {hideArtists && explicit && (
               <ExplicitBadge size="md" className="-mr-[2px] shrink-0" />
             )}
             <h3
-              className={`m-0 max-w-[min(52vw,560px)] overflow-hidden text-ellipsis whitespace-nowrap ${titleSizeClass} leading-[1.2] text-text-primary`}
+              className={`m-0 min-w-0 flex-1 truncate ${titleSizeClass} leading-[1.2] text-text-primary`}
               style={{
                 fontFamily: "var(--font-inter), sans-serif",
                 fontWeight: hideArtists ? 500 : 400,
@@ -251,7 +251,7 @@ function SongCard({
         </div>
       </div>
 
-      <div className="flex items-center shrink-0 ml-[16px] gap-[16px]">
+      <div className="flex items-center shrink-0 ml-[8px] md:ml-[16px] gap-[8px] md:gap-[16px]">
         {releaseDate && (
           <span
             className="text-[14px] text-text-tertiary"

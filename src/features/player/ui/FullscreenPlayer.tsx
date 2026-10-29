@@ -486,12 +486,12 @@ export function FullscreenPlayer({
 
       <div className="absolute inset-0 z-[1] bg-black/40" />
 
-      <div className="absolute inset-0 z-10 flex">
-        <div className="flex-1 flex flex-col items-center justify-center gap-5">
+      <div className="absolute inset-0 z-10 flex flex-col md:flex-row items-center justify-center p-4 md:p-0 overflow-y-auto md:overflow-hidden">
+        <div className="w-full flex-1 md:flex-1 flex flex-col items-center justify-center gap-4 md:gap-5">
           <PlayerUiElements onClose={onClose} />
         </div>
 
-        <div className="flex-1 h-full min-h-0 pl-2 pr-6 flex flex-col relative">
+        <div className="hidden md:flex flex-1 h-full min-h-0 pl-2 pr-6 flex-col relative">
           <div className="absolute top-[6px] left-1/2 -translate-x-1/2 z-30 pointer-events-none flex justify-center">
             <div className="relative inline-flex">
               <BetaVisualsWarning docked={showProviderIsland} />

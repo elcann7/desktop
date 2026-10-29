@@ -28,7 +28,7 @@ function ListeningNowSection({
     <section className="flex flex-col">
       <SectionHeading title={title} icon={icon} marginTop={headingMarginTop} />
 
-      <div className="mx-3 mt-[12px] grid grid-flow-col grid-cols-2 grid-rows-5 gap-x-[8px] rounded-[14px] bg-black/[0.03] p-[8px] dark:bg-white/[0.04]">
+      <div className="mx-2 md:mx-3 mt-[12px] flex flex-col md:grid md:grid-flow-col md:grid-cols-2 md:grid-rows-5 gap-1 md:gap-x-[8px] rounded-[14px] bg-black/[0.03] p-[6px] md:p-[8px] dark:bg-white/[0.04]">
         {tracks.map((track) => (
           <SongCardWithMenu
             key={track.id}

@@ -46,13 +46,13 @@ export function EntityHero({
 }: EntityHeroProps) {
   return (
     <section
-      className="flex w-full min-w-0 items-start gap-[22px]"
+      className="flex flex-col sm:flex-row w-full min-w-0 items-center sm:items-start gap-4 md:gap-[22px] text-center sm:text-left"
       style={{ fontFamily: "var(--font-inter), sans-serif" }}
       data-no-window-drag
     >
       <div
         className={cn(
-          "relative flex h-[168px] w-[168px] shrink-0 items-center justify-center overflow-hidden rounded-[10px]",
+          "relative flex h-[140px] w-[140px] sm:h-[168px] sm:w-[168px] shrink-0 items-center justify-center overflow-hidden rounded-[12px]",
           coverClassName || "bg-border-alpha-14",
         )}
       >
@@ -61,23 +61,23 @@ export function EntityHero({
 
       <div
         className={cn(
-          "flex min-w-0 flex-1 flex-col pt-[2px]",
+          "flex min-w-0 flex-1 flex-col pt-[2px] items-center sm:items-start w-full",
           contentClassName,
         )}
       >
-        <div className="min-w-0">{title}</div>
-        {subtitle && <div className="mt-[4px] min-w-0">{subtitle}</div>}
-        {meta && <div className="mt-[12px]">{meta}</div>}
+        <div className="min-w-0 w-full">{title}</div>
+        {subtitle && <div className="mt-[4px] min-w-0 w-full">{subtitle}</div>}
+        {meta && <div className="mt-[8px] md:mt-[12px] flex justify-center sm:justify-start">{meta}</div>}
 
         {(actions || trailingActions) && (
           <div
             className={cn(
-              "mt-[26px] flex flex-wrap items-center justify-between gap-[12px]",
+              "mt-4 md:mt-[26px] flex flex-wrap items-center justify-center sm:justify-between gap-[10px] md:gap-[12px] w-full",
               actionsClassName,
             )}
           >
             <div className="flex items-center gap-[8px]">{actions}</div>
-            <div className="flex items-center gap-[12px]">
+            <div className="flex items-center gap-[10px] md:gap-[12px]">
               {trailingActions}
             </div>
           </div>

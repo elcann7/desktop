@@ -449,11 +449,36 @@ export default function SettingsModal() {
           </button>
         </div>
 
+        {/* Mobile: Clean horizontal pill selector */}
+        <div className="flex md:hidden overflow-x-auto gap-1.5 px-3 py-1.5 shrink-0 no-scrollbar">
+          {filteredGroups.flatMap((g) => g.ids).map((id) => {
+            const isActive = id === activeTab;
+            const Icon = TAB_ICONS[id];
+            return (
+              <button
+                key={id}
+                type="button"
+                onClick={() => setActiveTab(id)}
+                className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[12px] font-medium border-0 transition-all cursor-pointer ${
+                  isActive
+                    ? "bg-text-primary text-bg-surface font-semibold shadow-sm"
+                    : "bg-black/[0.05] dark:bg-white/[0.08] text-text-secondary hover:text-text-primary"
+                }`}
+                style={font}
+              >
+                <Icon size={14} weight="Bold" className="shrink-0" />
+                <span>{tabLabels[id]}</span>
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Desktop: Grouped sidebar */}
         <nav
           ref={attachNavFade}
           onScroll={onNavScroll}
           style={navFadeStyle}
-          className="shrink-0 md:flex-1 min-h-0 overflow-x-auto md:overflow-y-auto px-[12px] py-[6px] flex flex-row md:flex-col gap-[6px] md:gap-[10px]"
+          className="hidden md:flex flex-1 min-h-0 overflow-y-auto px-[12px] pb-[12px] flex-col gap-[10px]"
           role="tablist"
           aria-label={t("settings.title")}
         >
@@ -599,13 +624,13 @@ export default function SettingsModal() {
       {/* ── Right secondary frame: same roundness, inset with padding, darker ── */}
       <div className="flex-1 min-w-0 min-h-0 flex">
         <div className="flex-1 min-w-0 min-h-0 flex flex-col rounded-[20px] bg-bg-primary/40 overflow-hidden">
-          <div className="flex items-start justify-between gap-[16px] px-[24px] pt-[24px] pb-[16px] shrink-0">
+          <div className="flex items-start justify-between gap-[16px] px-4 md:px-[24px] pt-3 md:pt-[24px] pb-[12px] md:pb-[16px] shrink-0">
             <div className="min-w-0">
-              <h3 className="font-montserrat text-text-primary text-[20px] m-0 font-[700] tracking-[-0.01em]">
+              <h3 className="font-montserrat text-text-primary text-[17px] md:text-[20px] m-0 font-[700] tracking-[-0.01em]">
                 {tabLabels[activeTab]}
               </h3>
               <p
-                className="text-text-secondary text-[12.5px] m-0 mt-[4px] leading-snug"
+                className="text-text-secondary text-[12px] md:text-[12.5px] m-0 mt-[2px] md:mt-[4px] leading-snug"
                 style={font}
               >
                 {tabDescriptions[activeTab]}
@@ -615,13 +640,13 @@ export default function SettingsModal() {
               type="button"
               aria-label={t("common.close") || "Close"}
               onClick={handleClose}
-              className="w-[28px] h-[28px] shrink-0 inline-flex items-center justify-center rounded-md text-text-tertiary hover:text-text-primary hover:bg-border-alpha-14 transition-colors border-0 bg-transparent p-0 cursor-pointer"
+              className="hidden md:inline-flex w-[28px] h-[28px] shrink-0 items-center justify-center rounded-md text-text-tertiary hover:text-text-primary hover:bg-border-alpha-14 transition-colors border-0 bg-transparent p-0 cursor-pointer"
             >
               <CloseLine size={17} />
             </button>
           </div>
 
-          <div className="flex-1 min-h-0 overflow-y-auto px-[24px] pb-[16px] flex flex-col">
+          <div className="flex-1 min-h-0 overflow-y-auto px-4 md:px-[24px] pb-[16px] flex flex-col">
             <motion.div
               key={activeTab}
               initial={{ opacity: 0, y: 7 }}

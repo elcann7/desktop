@@ -48,8 +48,8 @@ export function PlayerUiElements({ onClose }: PlayerUiElementsProps) {
   return (
     <div
       className={cn(
-        "flex min-w-[240px] flex-col items-stretch",
-        !scaled && "w-[min(340px,32vw,calc(100vh-340px))]",
+        "flex w-full max-w-[340px] md:max-w-none flex-col items-stretch",
+        !scaled && "w-[min(340px,86vw,calc(100vh-280px))] md:w-[min(340px,32vw,calc(100vh-340px))]",
       )}
       style={
         scaled ? { width: Math.round(BASE_COLUMN_WIDTH * scale) } : undefined
