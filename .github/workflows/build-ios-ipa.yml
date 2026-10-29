@@ -1,0 +1,68 @@
+name: Build iOS IPA
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - ios-app
+
+jobs:
+  build-ipa:
+    name: Build Liner iOS IPA
+    runs-on: macos-14
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --no-frozen-lockfile
+
+      - name: Build web assets
+        run: pnpm build
+
+      - name: Sync Capacitor iOS
+        run: npx cap sync ios
+
+      - name: Build Xcode Archive (Unsigned)
+        run: |
+          cd ios/App
+          xcodebuild clean archive \
+            -workspace App.xcworkspace \
+            -scheme App \
+            -configuration Release \
+            -destination 'generic/platform=iOS' \
+            -archivePath build/App.xcarchive \
+            CODE_SIGNING_ALLOWED=NO \
+            CODE_SIGNING_REQUIRED=NO \
+            CODE_SIGN_IDENTITY="" \
+            CODE_SIGN_ENTITLEMENTS=""
+
+      - name: Package into IPA
+        run: |
+          cd ios/App
+          mkdir -p Payload
+          cp -r build/App.xcarchive/Products/Applications/App.app Payload/Liner.app
+          zip -r Liner.ipa Payload
+          echo "IPA package created successfully."
+          ls -lh Liner.ipa
+
+      - name: Upload IPA Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Liner-iOS-IPA
+          path: ios/App/Liner.ipa
+          retention-days: 14

@@ -114,6 +114,8 @@
   "dependencies": {
     "@braccato/core": "^1.16.13",
     "@braccato/parsers": "^0.4.0",
+    "@capacitor/core": "^8.5.3",
+    "@capacitor/ios": "^8.5.3",
     "@mingcute/react": "^1.4.1",
     "@modelcontextprotocol/sdk": "^1.32.2",
     "@solar-icons/react": "^1.1.1",
@@ -145,6 +147,7 @@
     "zustand": "^5.0.16"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.5.3",
     "@tailwindcss/vite": "^4.3.3",
     "@types/node": "^20",
     "@types/react": "^19",
