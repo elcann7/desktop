@@ -26,21 +26,29 @@ export default function YoutubeSignInNotice() {
   return createPortal(
     <AnimatePresence>
       {open && (
-        <motion.div
-          role="dialog"
-          aria-live="polite"
-          data-no-window-drag
-          initial={{ opacity: 0, y: -16, scale: 0.98 }}
-          animate={{ opacity: 1, y: 0, scale: 1 }}
-          exit={{ opacity: 0, y: -12, scale: 0.98 }}
-          transition={{ type: "spring", stiffness: 420, damping: 34 }}
-          className={cn(
-            "fixed left-1/2 top-[24px] md:top-[44px] z-[9998] -translate-x-1/2",
-            "flex w-[600px] max-w-[calc(100vw-24px)] flex-col md:flex-row items-center md:items-stretch gap-[16px] md:gap-[20px] overflow-y-auto max-h-[90vh] p-[18px]",
-            "rounded-[26px] bg-bg-elevated/95 dark:bg-[#18181c]/95 shadow-[0_24px_80px_rgba(0,0,0,0.5)] border border-border-primary/40",
-            "backdrop-blur-[40px] backdrop-saturate-150",
-          )}
-        >
+        <>
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            onClick={dismiss}
+            className="fixed inset-0 z-[9997] bg-black/60 backdrop-blur-sm"
+          />
+          <motion.div
+            role="dialog"
+            aria-live="polite"
+            data-no-window-drag
+            initial={{ opacity: 0, y: 20, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0, y: 16, scale: 0.95 }}
+            transition={{ type: "spring", stiffness: 420, damping: 34 }}
+            className={cn(
+              "fixed left-1/2 top-1/2 -translate-y-1/2 z-[9998] -translate-x-1/2",
+              "flex w-[560px] max-w-[calc(100vw-28px)] flex-col md:flex-row items-center md:items-stretch gap-[16px] md:gap-[20px] overflow-y-auto max-h-[90vh] p-[20px]",
+              "rounded-[28px] bg-bg-surface/98 dark:bg-[#16161a]/98 shadow-[0_24px_80px_rgba(0,0,0,0.7)] border border-white/10",
+              "backdrop-blur-[48px]",
+            )}
+          >
           <LogoPattern />
           <div className="relative flex min-w-0 flex-1 flex-col">
             <TrackBadge />
@@ -82,6 +90,7 @@ export default function YoutubeSignInNotice() {
           </div>
           <ActivationPanel code={code} />
         </motion.div>
+        </>
       )}
     </AnimatePresence>,
     document.body,

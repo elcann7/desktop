@@ -6,7 +6,11 @@ import {
   CloseLine,
   CheckLine,
   DeleteLine,
+  YoutubeFill,
 } from "@mingcute/react";
+import { useYoutubeAccount } from "@/features/youtube-auth/hooks/useYoutubeAccount";
+import { useYoutubeSignInStore } from "@/features/youtube-auth";
+import { signOutYoutube } from "@/shared/youtube";
 import {
   Play,
   Palette,
@@ -48,6 +52,9 @@ export function MobileSpotifySettings({ onClose }: MobileSpotifySettingsProps) {
   const logout = useAuthStore((s) => s.logout);
   const displayName = userDisplayName(user) || "Elcan";
   const handle = user?.username ? `@${user.username}` : user?.email || "Free Account";
+
+  const { signedIn: ytSignedIn, account: ytAccount } = useYoutubeAccount();
+  const showYoutubeSignIn = useYoutubeSignInStore((s) => s.show);
 
   // Player Store playback settings
   const crossfadeSeconds = usePlayerStore((s) => s.crossfadeSeconds ?? 4);
@@ -176,6 +183,54 @@ export function MobileSpotifySettings({ onClose }: MobileSpotifySettingsProps) {
                   </div>
                 </div>
                 <RightLine size={18} className="text-white/40 shrink-0" />
+              </div>
+
+              {/* YouTube Account Status Card */}
+              <div className="p-4 rounded-2xl bg-gradient-to-r from-red-500/10 via-red-500/5 to-transparent border border-red-500/20 flex items-center justify-between">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-10 h-10 rounded-xl bg-red-600/20 border border-red-500/30 flex items-center justify-center shrink-0">
+                    <YoutubeFill size={22} className="text-red-500" />
+                  </div>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <span className="text-[15px] font-bold text-white truncate">
+                        YouTube Hesabı
+                      </span>
+                      {ytSignedIn ? (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
+                          Qoşulub
+                        </span>
+                      ) : (
+                        <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-500/20 text-red-400 border border-red-500/30">
+                          Qoşulmayıb
+                        </span>
+                      )}
+                    </div>
+                    <div className="text-[12px] text-white/50 truncate mt-0.5">
+                      {ytSignedIn
+                        ? ytAccount?.name || ytAccount?.email || "Hesab aktivdir"
+                        : "Mahnıların limitsiz oxunması üçün"}
+                    </div>
+                  </div>
+                </div>
+
+                {ytSignedIn ? (
+                  <button
+                    type="button"
+                    onClick={() => signOutYoutube()}
+                    className="px-3 py-1.5 rounded-xl bg-white/10 hover:bg-white/15 text-white/70 hover:text-white text-[12px] font-semibold border-0 cursor-pointer shrink-0 transition-colors"
+                  >
+                    Çıxış
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => showYoutubeSignIn("manual")}
+                    className="px-3.5 py-1.5 rounded-xl bg-red-600 hover:bg-red-500 text-white text-[12.5px] font-bold border-0 cursor-pointer shrink-0 shadow-lg shadow-red-600/30 active:scale-95 transition-all"
+                  >
+                    Qoşul
+                  </button>
+                )}
               </div>
 
               {/* Navigation List */}

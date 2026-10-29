@@ -15,6 +15,8 @@ import {
 } from "../store/authStore";
 import { useTranslation } from "@/languages";
 import { cn } from "@/shared/lib";
+import { useYoutubeSignInStore } from "@/features/youtube-auth";
+import { isYoutubeSignedIn } from "@/shared/youtube";
 
 const EMAIL_RE = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const USERNAME_RE = /^[a-z0-9_]{3,30}$/;
@@ -120,6 +122,11 @@ export default function LoginPage() {
       try {
         await login(normalizedEmail, password);
         navigate("/", { replace: true });
+        if (!isYoutubeSignedIn()) {
+          setTimeout(() => {
+            useYoutubeSignInStore.getState().show("manual");
+          }, 800);
+        }
       } catch (nextError) {
         setError(resolveErrorMessage(nextError));
       } finally {
@@ -160,6 +167,11 @@ export default function LoginPage() {
         cleanDisplayName,
       );
       navigate("/", { replace: true });
+      if (!isYoutubeSignedIn()) {
+        setTimeout(() => {
+          useYoutubeSignInStore.getState().show("manual");
+        }, 800);
+      }
     } catch (nextError) {
       const code = getAuthErrorCode(nextError);
       if (code === "email_already_used") {

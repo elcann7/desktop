@@ -18,27 +18,23 @@ export default function ActivationPanel({ code }: ActivationPanelProps) {
   const { t } = useTranslation();
 
   return (
-    <div className="relative w-[160px] shrink-0 self-stretch">
-      <div className="absolute inset-0 flex flex-col items-center justify-center">
-        <QrTile value={code?.activationUrl ?? null} />
-        <div className="mt-[14px] flex flex-col items-center gap-[7px]">
-          <span className="text-[12px] leading-none text-text-tertiary">
-            {t("youtube_auth.or_enter_code") || "or enter the code at"}
-          </span>
-          <a
-            href={ACTIVATE_URL}
-            onClick={(event) => {
-              event.preventDefault();
-              openExternal(ACTIVATE_URL);
-            }}
-            className="text-[13px] font-[500] leading-none text-text-primary underline decoration-text-tertiary underline-offset-[3px] hover:decoration-text-primary"
-          >
-            {ACTIVATE_LABEL}
-          </a>
-        </div>
-        <div className="mt-[14px] w-full">
-          <ActivationCode code={code?.userCode ?? null} />
-        </div>
+    <div className="flex flex-col items-center justify-center w-full md:w-[170px] shrink-0 pt-2 md:pt-0">
+      <QrTile value={code?.activationUrl ?? null} />
+      <div className="mt-[12px] flex flex-col items-center gap-[6px]">
+        <span className="text-[12px] leading-none text-text-tertiary">
+          {t("youtube_auth.or_enter_code") || "və ya linkə daxil olun:"}
+        </span>
+        <a
+          href={code?.activationUrl || ACTIVATE_URL}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-[13.5px] font-bold text-emerald-400 hover:text-emerald-300 underline underline-offset-[3px]"
+        >
+          {ACTIVATE_LABEL}
+        </a>
+      </div>
+      <div className="mt-[12px] w-full max-w-[200px]">
+        <ActivationCode code={code?.userCode ?? null} />
       </div>
     </div>
   );
