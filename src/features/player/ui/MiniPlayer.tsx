@@ -525,73 +525,87 @@ function MiniPlayer({
   const [scrubRatio, setScrubRatio] = useState<number | null>(null);
   const activeProgress = scrubRatio !== null ? scrubRatio : progress;
 
-  const touchStartXRef = useRef<number | null>(null);
-  const touchStartYRef = useRef<number | null>(null);
-  const touchDeltaXRef = useRef<number>(0);
-  const isSwipingRef = useRef<boolean>(false);
-  const [swipeOffset, setSwipeOffset] = useState<number>(0);
+  const scrubCardRef = useRef<HTMLDivElement>(null);
+  const isDraggingScrubRef = useRef(false);
+  const dragStartRef = useRef<{ x: number; y: number } | null>(null);
 
-  const handleTouchStart = useCallback((e: React.TouchEvent) => {
-    const target = e.target as HTMLElement | null;
-    if (
-      target?.closest(
-        "button, a, input, [role='button'], [role='slider'], .prevent-seek",
-      )
-    ) {
-      touchStartXRef.current = null;
-      return;
-    }
-    touchStartXRef.current = e.touches[0].clientX;
-    touchStartYRef.current = e.touches[0].clientY;
-    touchDeltaXRef.current = 0;
-    isSwipingRef.current = false;
-  }, []);
+  const updateScrubFromClientX = useCallback(
+    (clientX: number) => {
+      const card = scrubCardRef.current;
+      if (!card || !durationMs) return 0;
+      const rect = card.getBoundingClientRect();
+      const ratio = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+      setScrubRatio(ratio);
+      usePlayerStore.getState().setPosition(Math.round(ratio * durationMs));
+      return ratio;
+    },
+    [durationMs],
+  );
 
-  const handleTouchMove = useCallback((e: React.TouchEvent) => {
-    if (touchStartXRef.current === null || touchStartYRef.current === null)
-      return;
-    const currentX = e.touches[0].clientX;
-    const currentY = e.touches[0].clientY;
-    const dx = currentX - touchStartXRef.current;
-    const dy = currentY - touchStartYRef.current;
-
-    if (!isSwipingRef.current) {
-      if (Math.abs(dx) > 8 && Math.abs(dx) > Math.abs(dy) * 1.2) {
-        isSwipingRef.current = true;
-      } else if (Math.abs(dy) > 12) {
-        touchStartXRef.current = null;
+  const handleCardPointerDown = useCallback(
+    (e: React.PointerEvent<HTMLDivElement>) => {
+      if (e.button !== 0) return;
+      const target = e.target as HTMLElement | null;
+      if (
+        !target ||
+        target.closest(
+          "button, a, input, [role='button'], [role='slider'], .prevent-seek",
+        )
+      ) {
         return;
       }
-    }
 
-    if (isSwipingRef.current) {
-      touchDeltaXRef.current = dx;
-      setSwipeOffset(Math.max(-70, Math.min(70, dx * 0.45)));
-    }
-  }, []);
+      dragStartRef.current = { x: e.clientX, y: e.clientY };
+      isDraggingScrubRef.current = false;
 
-  const handleTouchEnd = useCallback(() => {
-    const dx = touchDeltaXRef.current;
-    const swiped = isSwipingRef.current && Math.abs(dx) > 35;
-    setSwipeOffset(0);
+      const onPointerMove = (ev: PointerEvent) => {
+        if (!dragStartRef.current) return;
+        const dx = ev.clientX - dragStartRef.current.x;
+        const dy = ev.clientY - dragStartRef.current.y;
 
-    if (swiped) {
-      if (dx < -35) {
-        // Swiped Left -> Next Track
-        void playerEngine.skipNext();
-      } else if (dx > 35) {
-        // Swiped Right -> Previous Track
-        void playerEngine.skipPrevious();
-      }
-    }
+        if (!isDraggingScrubRef.current) {
+          if (Math.abs(dx) > 6 && Math.abs(dx) > Math.abs(dy)) {
+            isDraggingScrubRef.current = true;
+          } else if (Math.abs(dy) > 10) {
+            cleanup();
+            return;
+          }
+        }
 
-    setTimeout(() => {
-      touchStartXRef.current = null;
-      touchStartYRef.current = null;
-      touchDeltaXRef.current = 0;
-      isSwipingRef.current = false;
-    }, 120);
-  }, []);
+        if (isDraggingScrubRef.current) {
+          updateScrubFromClientX(ev.clientX);
+        }
+      };
+
+      const onPointerUp = (ev: PointerEvent) => {
+        if (isDraggingScrubRef.current && durationMs) {
+          const finalRatio = updateScrubFromClientX(ev.clientX);
+          setScrubRatio(null);
+          playerEngine.seek(finalRatio * durationMs);
+        } else {
+          setScrubRatio(null);
+        }
+
+        setTimeout(() => {
+          dragStartRef.current = null;
+          isDraggingScrubRef.current = false;
+        }, 120);
+
+        cleanup();
+      };
+
+      const cleanup = () => {
+        window.removeEventListener("pointermove", onPointerMove);
+        window.removeEventListener("pointerup", onPointerUp);
+        window.removeEventListener("pointercancel", onPointerUp);
+      };
+
+      window.addEventListener("pointermove", onPointerMove);
+      window.addEventListener("pointerup", onPointerUp);
+      window.addEventListener("pointercancel", onPointerUp);
+    },
+    [durationMs, updateScrubFromClientX],
+  );
 
   return (
     <div
@@ -673,6 +687,7 @@ function MiniPlayer({
       </AnimatePresence>
 
       <div
+        ref={scrubCardRef}
         className={`relative h-[64px] w-full overflow-hidden cursor-pointer ${
           usesRoundedStyle
             ? "rounded-full border-[0.5px] border-border-tertiary bg-bg-primary"
@@ -684,20 +699,10 @@ function MiniPlayer({
                 }`
               : "rounded-3xl border-[0.5px] border-border-tertiary bg-bg-primary"
         }`}
-        style={{
-          transform: swipeOffset !== 0 ? `translateX(${swipeOffset}px)` : undefined,
-          transition: swipeOffset === 0 ? "transform 220ms cubic-bezier(0.22, 1, 0.36, 1)" : "none",
-        }}
-        onTouchStart={handleTouchStart}
-        onTouchMove={handleTouchMove}
-        onTouchEnd={handleTouchEnd}
-        onTouchCancel={() => {
-          setSwipeOffset(0);
-          touchStartXRef.current = null;
-          isSwipingRef.current = false;
-        }}
+        style={{ touchAction: "pan-y" }}
+        onPointerDown={handleCardPointerDown}
         onClick={(e) => {
-          if (isSwipingRef.current || Math.abs(touchDeltaXRef.current) > 15) {
+          if (isDraggingScrubRef.current) {
             e.stopPropagation();
             return;
           }

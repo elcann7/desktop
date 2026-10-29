@@ -81,7 +81,24 @@ async function resolveYoutubeStandIn(
     "playback",
     `playing youtube stand-in ${videoId} for "${track.title}"`,
   );
-  return resolveYoutubeAudio(videoId, progressive, signal);
+  try {
+    return await resolveYoutubeAudio(videoId, progressive, signal);
+  } catch (error) {
+    if (isAbortError(error, signal)) throw error;
+    try {
+      const standIn = await findYoutubeStandIn(track, signal);
+      if (standIn && standIn !== videoId) {
+        log("cyan", "playback", `fallback to youtube stand-in ${standIn} for "${track.title}"`);
+        return await resolveYoutubeAudio(standIn, progressive, signal);
+      }
+    } catch {}
+    try {
+      log("cyan", "playback", `fallback to soundcloud for "${track.title}"`);
+      return await resolveSoundCloud(track, progressive, signal);
+    } catch {
+      throw error;
+    }
+  }
 }
 
 async function resolveSoundCloud(
@@ -130,7 +147,24 @@ async function resolveYoutubeTrack(
     log("cyan", "playback", `playing liner audio (r2) for "${track.title}"`);
     return fromLinerStream(liner, track);
   }
-  return resolveYoutubeAudio(videoId, progressive, signal);
+  try {
+    return await resolveYoutubeAudio(videoId, progressive, signal);
+  } catch (error) {
+    if (isAbortError(error, signal)) throw error;
+    try {
+      const standIn = await findYoutubeStandIn(track, signal);
+      if (standIn && standIn !== videoId) {
+        log("cyan", "playback", `fallback to youtube stand-in ${standIn} for "${track.title}"`);
+        return await resolveYoutubeAudio(standIn, progressive, signal);
+      }
+    } catch {}
+    try {
+      log("cyan", "playback", `fallback to soundcloud for "${track.title}"`);
+      return await resolveSoundCloud(track, progressive, signal);
+    } catch {
+      throw error;
+    }
+  }
 }
 
 export async function resolvePlaybackStream(
