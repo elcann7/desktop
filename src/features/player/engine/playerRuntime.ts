@@ -68,14 +68,19 @@ export class PlayerRuntime {
     let audio = (win?.__liner_audio ||
       (typeof document !== "undefined" &&
         document.getElementById("liner-audio"))) as HTMLAudioElement | null;
+    const isElectron = Boolean(win?.linerElectron);
     if (!audio) {
       audio = new Audio();
       audio.id = "liner-audio";
-      audio.crossOrigin = "anonymous";
+      if (isElectron) {
+        audio.crossOrigin = "anonymous";
+      }
       audio.preload = "auto";
       if (typeof document !== "undefined") {
         document.body.appendChild(audio);
       }
+    } else if (!isElectron) {
+      audio.removeAttribute("crossorigin");
     }
     if (win) {
       win.__liner_audio = audio;
@@ -608,12 +613,18 @@ export class PlayerRuntime {
       if (!this.secondaryAudio) {
         this.secondaryAudio = new Audio();
         this.secondaryAudio.id = "liner-audio-secondary";
-        this.secondaryAudio.crossOrigin = "anonymous";
+        const isElectron =
+          typeof window !== "undefined" && Boolean(window.linerElectron);
+        if (isElectron) {
+          this.secondaryAudio.crossOrigin = "anonymous";
+        }
         this.secondaryAudio.preload = "auto";
         if (typeof document !== "undefined") {
           document.body.appendChild(this.secondaryAudio);
         }
         this.setupAudioListeners(this.secondaryAudio);
+      } else if (typeof window !== "undefined" && !window.linerElectron) {
+        this.secondaryAudio.removeAttribute("crossorigin");
       }
 
       const incomingAudio = this.secondaryAudio;
@@ -634,6 +645,9 @@ export class PlayerRuntime {
       }
 
       if (!this.isCrossfading) return;
+      if (typeof window !== "undefined" && !window.linerElectron) {
+        incomingAudio.removeAttribute("crossorigin");
+      }
       incomingAudio.src = src;
       incomingAudio.currentTime = 0;
       incomingAudio.volume = 0;
@@ -839,6 +853,9 @@ export class PlayerRuntime {
 
   private attachSource(url: string, isBlob: boolean, trackId: string) {
     const previousBlob = this.activeBlobUrl;
+    if (typeof window !== "undefined" && !window.linerElectron) {
+      this.audio.removeAttribute("crossorigin");
+    }
     this.audio.src = url;
     this.activeBlobUrl = isBlob ? url : null;
     this.attachedTrackId = trackId;

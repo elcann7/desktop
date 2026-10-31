@@ -24,7 +24,7 @@ import {
   type PlayableTrack,
   type PlaybackStream,
 } from "./playbackStream";
-import { findYoutubeStandIn } from "./youtubeStandIn";
+import { findYoutubeStandIn, reportFailedYoutubeStandIn } from "./youtubeStandIn";
 import { findExactSongVersion } from "./exactSongVersion";
 
 export interface ResolveStreamOptions {
@@ -95,6 +95,7 @@ async function resolveYoutubeStandIn(
     return await resolveYoutubeAudio(videoId, progressive, signal);
   } catch (error) {
     if (isAbortError(error, signal)) throw error;
+    reportFailedYoutubeStandIn(track.id, videoId);
     try {
       const standIn = await findYoutubeStandIn(track, signal);
       if (standIn && standIn !== videoId) {
@@ -161,6 +162,7 @@ async function resolveYoutubeTrack(
     return await resolveYoutubeAudio(videoId, progressive, signal);
   } catch (error) {
     if (isAbortError(error, signal)) throw error;
+    reportFailedYoutubeStandIn(track.id, videoId);
     try {
       const standIn = await findYoutubeStandIn(track, signal);
       if (standIn && standIn !== videoId) {

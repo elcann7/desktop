@@ -33,7 +33,8 @@ function installPlayerEvaluator(): void {
 const isBrowser =
   typeof window !== "undefined" &&
   !window.linerElectron &&
-  !(window as any).Capacitor?.isNativePlatform?.();
+  !(window as any).Capacitor?.isNativePlatform?.() &&
+  !(typeof process !== "undefined" && process.env?.VITEST);
 
 function createSessionFetch() {
   return (input: RequestInfo | URL, init?: RequestInit) => {
@@ -42,16 +43,37 @@ function createSessionFetch() {
         ? input
         : input instanceof URL
           ? input.toString()
-          : (input as Request).url;
+          : input.url;
 
     if (isBrowser) {
+      const origin =
+        typeof window !== "undefined" && window.location?.origin
+          ? window.location.origin
+          : "";
       if (url.includes("/youtubei/")) {
-        url = url.replace(/https?:\/\/[^/]+\/youtubei\//, "/youtubei/");
+        url = url.replace(/https?:\/\/[^/]+\/youtubei\//, `${origin}/youtubei/`);
       } else if (url.includes("/s/player/")) {
-        url = url.replace(/https?:\/\/[^/]+\/s\/player\//, "/s/player/");
+        url = url.replace(/https?:\/\/[^/]+\/s\/player\//, `${origin}/s/player/`);
       }
     }
-    return fetch(url, init);
+
+    if (typeof input === "string" || input instanceof URL) {
+      return fetch(url, init);
+    }
+    const method = init?.method || input.method;
+    const headers = init?.headers || input.headers;
+    const body =
+      init?.body !== undefined
+        ? init.body
+        : method !== "GET" && method !== "HEAD"
+          ? input.body
+          : undefined;
+    return fetch(url, {
+      ...init,
+      method,
+      headers,
+      ...(body ? { body } : {}),
+    });
   };
 }
 

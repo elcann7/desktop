@@ -81,7 +81,7 @@ describe("resolvePlaybackStream for youtube ids", () => {
     expect(mocks.resolveSoundCloudStream).not.toHaveBeenCalled();
   });
 
-  it("surfaces the innertube error when youtube cannot play the track", async () => {
+  it("surfaces the innertube error when youtube cannot play the track and no fallback exists", async () => {
     mocks.resolveDirectAudioStream.mockRejectedValue(
       new Error("LOGIN_REQUIRED"),
     );
@@ -89,6 +89,25 @@ describe("resolvePlaybackStream for youtube ids", () => {
     await expect(resolvePlaybackStream(track("dQw4w9WgXcQ"))).rejects.toThrow(
       "LOGIN_REQUIRED",
     );
+  });
+
+  it("falls back to alternative youtube stand-in when primary youtube video fails", async () => {
+    mocks.resolveDirectAudioStream
+      .mockRejectedValueOnce(new Error("VIDEO_UNAVAILABLE"))
+      .mockResolvedValueOnce(directStream);
+    mocks.searchRaw.mockResolvedValue([
+      searchTrack("4NRXx6U8ABQ", "Blinding Lights", "The Weeknd", 200_040),
+    ]);
+
+    const stream = await resolvePlaybackStream(track("dQw4w9WgXcQ"));
+
+    expect(mocks.resolveDirectAudioStream).toHaveBeenCalledWith("dQw4w9WgXcQ", {
+      signal: undefined,
+    });
+    expect(mocks.resolveDirectAudioStream).toHaveBeenCalledWith("4NRXx6U8ABQ", {
+      signal: undefined,
+    });
+    expect(stream).toMatchObject({ url: directStream.url });
   });
 });
 
