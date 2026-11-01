@@ -56,11 +56,13 @@ export const SearchHistoryList = memo(function SearchHistoryList({
 
       <div className="flex flex-col gap-[6px]">
         {items.map((item) => {
+          if (!item) return null;
+          const itemTitle = String(item.title ?? (item as any).query ?? "");
           if (item.type === "query") {
             return (
               <div
                 key={item.id}
-                onClick={() => onSelectQuery(item.title)}
+                onClick={() => onSelectQuery(itemTitle)}
                 className="group flex items-center w-full min-w-0 rounded-[8px] hover:bg-border-alpha-14 cursor-pointer transition-colors select-none"
               >
                 <div className="flex flex-1 items-center gap-[12px] min-w-0 pl-[12px] py-[9px]">
@@ -68,7 +70,7 @@ export const SearchHistoryList = memo(function SearchHistoryList({
                     <Search3Line size={17} />
                   </span>
                   <span className="truncate text-[14.5px] font-[400] text-text-primary">
-                    {item.title}
+                    {itemTitle}
                   </span>
                 </div>
                 <RemoveHistoryButton
@@ -86,10 +88,10 @@ export const SearchHistoryList = memo(function SearchHistoryList({
             <SongCardWithMenu
               key={item.id}
               id={item.id}
-              title={item.title}
+              title={itemTitle}
               artistId={data?.artistId ?? data?.artist_id}
               artistList={data?.artistList}
-              artists={item.subtitle || ""}
+              artists={typeof item.subtitle === "string" ? item.subtitle : ""}
               coverUrl={item.coverUrl || ""}
               explicit={item.explicit}
               imageShape={isArtist ? "circle" : "square"}

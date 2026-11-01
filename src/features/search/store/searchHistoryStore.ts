@@ -34,17 +34,25 @@ export const useSearchHistoryStore = create<SearchHistoryState>()(
       items: [],
       addItem: (item) =>
         set((state) => {
+          const itemTitle = String(
+            item.title ?? (item as any).query ?? "",
+          ).trim();
           const filtered = state.items.filter((it) => {
+            if (!it) return false;
+            const itTitle = String(
+              it.title ?? (it as any).query ?? "",
+            ).trim();
             if (item.type === "query" && it.type === "query") {
               return (
-                it.title.trim().toLowerCase() !==
-                item.title.trim().toLowerCase()
+                itTitle.toLowerCase() !==
+                itemTitle.toLowerCase()
               );
             }
             return it.id !== item.id;
           });
           const newItem: SearchHistoryItem = {
             ...item,
+            title: itemTitle || item.id,
             timestamp: Date.now(),
           };
           return {

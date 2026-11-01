@@ -68,13 +68,32 @@ export const SearchResultsList = memo(function SearchResultsList({
 
           const subtitle =
             isArtist && it.followers
-              ? t("common.followers", { count: it.followers.toLocaleString() })
+              ? t("common.followers", {
+                  count:
+                    typeof it.followers === "number"
+                      ? it.followers.toLocaleString()
+                      : String(it.followers),
+                })
               : isAlbumOrPlaylist &&
                   (it.totalTracks !== undefined ||
                     it.total_tracks !== undefined)
                 ? `${it.totalTracks ?? it.total_tracks} ${t("common.tracks")}`
-                : it.artists || it.artist || it.owner || "";
+                : typeof it.artists === "string"
+                  ? it.artists
+                  : typeof it.artist === "string"
+                    ? it.artist
+                    : typeof it.owner === "string"
+                      ? it.owner
+                      : Array.isArray(it.artists)
+                        ? it.artists
+                            .map((a: any) =>
+                              typeof a === "string" ? a : (a?.name ?? ""),
+                            )
+                            .filter(Boolean)
+                            .join(", ")
+                        : "";
 
+          const title = String(it.title || it.name || "");
           const durationMs = it.durationMs ?? it.duration_ms;
           const durationStr = durationMs
             ? `${Math.floor(durationMs / 60000)}:${Math.floor(
@@ -99,7 +118,7 @@ export const SearchResultsList = memo(function SearchResultsList({
             >
               <SongCardWithMenu
                 id={it.id}
-                title={it.title || it.name || ""}
+                title={title}
                 artistId={it.artistId ?? it.artist_id}
                 artistList={it.artistList}
                 artists={subtitle}

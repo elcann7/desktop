@@ -246,7 +246,18 @@ function SongCard({
                   className="text-text-secondary"
                 />
               ) : (
-                <span className="truncate select-none">{artists}</span>
+                <span className="truncate select-none">
+                  {typeof artists === "string"
+                    ? artists
+                    : Array.isArray(artists as any)
+                      ? (artists as any)
+                          .map((a: any) => (typeof a === "string" ? a : a?.name || ""))
+                          .filter(Boolean)
+                          .join(", ")
+                      : (artists as any)?.name
+                        ? String((artists as any).name)
+                        : String(artists ?? "")}
+                </span>
               )}
             </p>
           )}

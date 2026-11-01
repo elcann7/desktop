@@ -384,6 +384,21 @@ export default function AppFrame({ children }: AppFrameProps) {
     debounceMs: 320,
   });
 
+  const toSafeArtistsString = useCallback((val: any): string => {
+    if (!val) return "";
+    if (typeof val === "string") return val;
+    if (Array.isArray(val)) {
+      return val
+        .map((it: any) => (typeof it === "string" ? it : it?.name || ""))
+        .filter(Boolean)
+        .join(", ");
+    }
+    if (typeof val === "object") {
+      return typeof val.name === "string" ? val.name : "";
+    }
+    return String(val);
+  }, []);
+
   const searchResults = useMemo(() => {
     if (isAllSearchFilter) {
       return allResults.map((item: any) => {
@@ -406,7 +421,7 @@ export default function AppFrame({ children }: AppFrameProps) {
           return {
             ...item,
             _type: "artist",
-            title: item.name,
+            title: String(item.name || item.title || ""),
             coverUrl: toMaxQualityAvatarUrl(coverUrl),
             artists: "",
           };
@@ -415,10 +430,9 @@ export default function AppFrame({ children }: AppFrameProps) {
           return {
             ...item,
             _type: "album",
+            title: String(item.title || item.name || ""),
             coverUrl,
-            artists: Array.isArray(item.artists)
-              ? item.artists.map((a: any) => a.name).join(", ")
-              : (item.artists ?? ""),
+            artists: toSafeArtistsString(item.artists),
             artistId: item.artists?.[0]?.id,
             artistList: Array.isArray(item.artists)
               ? item.artists.map((a: any) => ({ id: a.id, name: a.name }))
@@ -428,8 +442,9 @@ export default function AppFrame({ children }: AppFrameProps) {
         return {
           ...item,
           _type: item.type,
+          title: String(item.title || item.name || ""),
           coverUrl,
-          artists: item.author ?? item.artists ?? "",
+          artists: toSafeArtistsString(item.author ?? item.artists),
           artistId: item.artists?.[0]?.id,
           artistList: Array.isArray(item.artists)
             ? item.artists.map((a: any) => ({ id: a.id, name: a.name }))
@@ -456,7 +471,7 @@ export default function AppFrame({ children }: AppFrameProps) {
       return artistResults.map((a: any) => ({
         ...a,
         _type: "artist",
-        title: a.name,
+        title: String(a.name || a.title || ""),
         coverUrl: toMaxQualityAvatarUrl(
           a.cover ? mediaUrl(a.cover.url) : (a.coverUrl ?? ""),
         ),
@@ -465,10 +480,9 @@ export default function AppFrame({ children }: AppFrameProps) {
       return albumResults.map((a: any) => ({
         ...a,
         _type: "album",
+        title: String(a.title || a.name || ""),
         coverUrl: a.cover ? mediaUrl(a.cover.url) : (a.coverUrl ?? ""),
-        artists: Array.isArray(a.artists)
-          ? a.artists.map((ar: any) => ar.name).join(", ")
-          : (a.artists ?? ""),
+        artists: toSafeArtistsString(a.artists),
         artistId: a.artists?.[0]?.id,
         artistList: Array.isArray(a.artists)
           ? a.artists.map((ar: any) => ({ id: ar.id, name: ar.name }))
@@ -478,10 +492,13 @@ export default function AppFrame({ children }: AppFrameProps) {
       return playlistResults.map((p: any) => ({
         ...p,
         _type: "playlist",
+        title: String(p.title || p.name || ""),
+        artists: toSafeArtistsString(p.author ?? p.artists ?? p.owner),
         coverUrl: p.cover ? mediaUrl(p.cover.url) : (p.coverUrl ?? ""),
       }));
     return [];
   }, [
+    toSafeArtistsString,
     isAllSearchFilter,
     isTrackSearchFilter,
     isArtistSearchFilter,

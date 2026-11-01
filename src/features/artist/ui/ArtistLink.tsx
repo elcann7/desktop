@@ -19,6 +19,26 @@ export interface ArtistLinkProps {
   plain?: boolean;
 }
 
+function toSafeArtistString(value: unknown, separator: string): string {
+  if (typeof value === "string") return value;
+  if (!value) return "";
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => (typeof item === "string" ? item : (item?.name ?? "")))
+      .filter(Boolean)
+      .join(separator);
+  }
+  if (
+    typeof value === "object" &&
+    value !== null &&
+    "name" in value &&
+    typeof (value as any).name === "string"
+  ) {
+    return (value as any).name;
+  }
+  return String(value);
+}
+
 export default function ArtistLink({
   name,
   artistId,
@@ -55,7 +75,7 @@ export default function ArtistLink({
   let innerContent: React.ReactNode = null;
 
   if (plain) {
-    const text = name ?? artists;
+    const text = toSafeArtistString(name ?? artists, separator);
     if (!text) return null;
     innerContent = <span>{text}</span>;
   } else if (artistList && artistList.length > 0) {
@@ -115,7 +135,7 @@ export default function ArtistLink({
       );
     });
   } else {
-    const text = name ?? artists;
+    const text = toSafeArtistString(name ?? artists, separator);
     if (!text) return null;
 
     if (artistId && artistId !== "unknown") {

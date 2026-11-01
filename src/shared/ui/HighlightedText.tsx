@@ -8,27 +8,28 @@ interface HighlightedTextProps {
 
 /** Text with the parts matching `query` softly marked (search results). */
 function HighlightedText({ text, query }: HighlightedTextProps) {
+  const safeText = typeof text === "string" ? text : String(text ?? "");
   const ranges = useMemo(
-    () => (query ? findHighlightRanges(text, query) : []),
-    [text, query],
+    () => (query && safeText ? findHighlightRanges(safeText, query) : []),
+    [safeText, query],
   );
-  if (ranges.length === 0) return <>{text}</>;
+  if (ranges.length === 0) return <>{safeText}</>;
 
   const parts: React.ReactNode[] = [];
   let cursor = 0;
   ranges.forEach(([start, end], i) => {
-    if (start > cursor) parts.push(text.slice(cursor, start));
+    if (start > cursor) parts.push(safeText.slice(cursor, start));
     parts.push(
       <mark
         key={i}
         className="rounded-[3px] bg-text-primary/[0.16] text-inherit [box-decoration-break:clone]"
       >
-        {text.slice(start, end)}
+        {safeText.slice(start, end)}
       </mark>,
     );
     cursor = end;
   });
-  if (cursor < text.length) parts.push(text.slice(cursor));
+  if (cursor < safeText.length) parts.push(safeText.slice(cursor));
   return <>{parts}</>;
 }
 

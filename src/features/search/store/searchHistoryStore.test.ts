@@ -122,6 +122,24 @@ describe("searchHistoryStore", () => {
     expect(items[0].id).toBe("track-34");
   });
 
+  it("safely handles items with missing or undefined title", () => {
+    useSearchHistoryStore.getState().addItem({
+      id: "query:barbar",
+      type: "query",
+    } as any);
+
+    useSearchHistoryStore.getState().addItem({
+      id: "query:other",
+      type: "query",
+      title: "other",
+    });
+
+    const items = useSearchHistoryStore.getState().items;
+    expect(items.length).toBe(2);
+    expect(items[0].id).toBe("query:other");
+    expect(items[1].id).toBe("query:barbar");
+  });
+
   it("clears search history from both in-memory store and storage when cache is wiped", async () => {
     useSearchHistoryStore.getState().addItem({
       id: "track-1",
