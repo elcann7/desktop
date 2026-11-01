@@ -112,7 +112,10 @@ export async function postInnertube(
     !(window as any).Capacitor?.isNativePlatform() &&
     window.location.origin
   ) {
-    url = `/youtubei/v1/${endpoint}?prettyPrint=false`;
+    const prefix = profile.origin.includes("www.youtube.com")
+      ? "/youtubei-www"
+      : "/youtubei";
+    url = `${prefix}/v1/${endpoint}?prettyPrint=false`;
   }
 
   const send = async (): Promise<Response> => {

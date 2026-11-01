@@ -70,12 +70,39 @@ export default defineConfig(({ command, mode }) => {
       port: 5173,
       strictPort: true,
       proxy: {
+        "/youtubei-www": {
+          target: "https://www.youtube.com",
+          changeOrigin: true,
+          rewrite: (p) => p.replace(/^\/youtubei-www/, "/youtubei"),
+          headers: {
+            origin: "https://www.youtube.com",
+            referer: "https://www.youtube.com/",
+          },
+          configure: (proxy) => {
+            proxy.on("proxyReq", (proxyReq, req) => {
+              const xUserAgent = req.headers["x-liner-user-agent"];
+              if (typeof xUserAgent === "string" && xUserAgent) {
+                proxyReq.setHeader("user-agent", xUserAgent);
+                proxyReq.removeHeader("x-liner-user-agent");
+              }
+            });
+          },
+        },
         "/youtubei": {
           target: "https://music.youtube.com",
           changeOrigin: true,
           headers: {
             origin: "https://music.youtube.com",
-            referer: "https://music.youtube.com",
+            referer: "https://music.youtube.com/",
+          },
+          configure: (proxy) => {
+            proxy.on("proxyReq", (proxyReq, req) => {
+              const xUserAgent = req.headers["x-liner-user-agent"];
+              if (typeof xUserAgent === "string" && xUserAgent) {
+                proxyReq.setHeader("user-agent", xUserAgent);
+                proxyReq.removeHeader("x-liner-user-agent");
+              }
+            });
           },
         },
         "/s/player": {
