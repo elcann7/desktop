@@ -53,21 +53,29 @@ export async function findYoutubeStandIn(
     // continue to searchRaw fallback
   }
 
-  // Fallback: search YouTube directly and pick the first non-failed video result
-  try {
-    const query = artist ? `${track.title} ${artist}` : track.title;
-    const results = await searchRaw(query, undefined, signal);
-    for (const item of results) {
-      if (item.type === "track") {
-        const vid = toVideoId(item.id);
-        if (vid && !failedVideoIds.has(vid)) {
-          matchedVideoIds.set(track.id, vid);
-          return vid;
+  // Fallback: search YouTube directly and pick the first non-failed video result.
+  // If searching with artist yields no tracks (common with obscure uploaders or remixes),
+  // retry searching with title alone.
+  const queries = [
+    artist ? `${track.title} ${artist}` : null,
+    track.title,
+  ].filter((q): q is string => Boolean(q));
+
+  for (const query of queries) {
+    try {
+      const results = await searchRaw(query, undefined, signal);
+      for (const item of results) {
+        if (item.type === "track") {
+          const vid = toVideoId(item.id);
+          if (vid && !failedVideoIds.has(vid)) {
+            matchedVideoIds.set(track.id, vid);
+            return vid;
+          }
         }
       }
+    } catch {
+      // try next query or return null
     }
-  } catch {
-    // search failed or aborted
   }
 
   return null;

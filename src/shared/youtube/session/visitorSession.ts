@@ -32,7 +32,13 @@ export async function getClientVisitorData(): Promise<string> {
 
   pendingFetch = (async () => {
     try {
-      const res = await fetch("https://www.youtube.com/sw.js_data", {
+      const isBrowser =
+        typeof window !== "undefined" &&
+        !window.linerElectron &&
+        !(window as any).Capacitor?.isNativePlatform?.() &&
+        !(typeof process !== "undefined" && process.env?.VITEST);
+      const url = isBrowser ? "/sw.js_data" : "https://www.youtube.com/sw.js_data";
+      const res = await fetch(url, {
         headers: {
           "user-agent":
             typeof navigator !== "undefined"

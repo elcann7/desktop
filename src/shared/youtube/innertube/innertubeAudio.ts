@@ -31,16 +31,6 @@ function orderedProfiles(
   profiles: readonly InnertubeProfile[],
 ): readonly InnertubeProfile[] {
   if (!lastWorkingProfile || !profiles.includes(lastWorkingProfile)) {
-    const isBrowser =
-      typeof window !== "undefined" &&
-      !window.linerElectron &&
-      !process.env.VITEST;
-    if (isBrowser) {
-      return [
-        VISIONOS_PROFILE,
-        ...profiles.filter((profile) => profile !== VISIONOS_PROFILE),
-      ];
-    }
     return profiles;
   }
   return [
@@ -124,14 +114,10 @@ export async function resolveDirectAudioStream(
   const failures: string[] = [];
   let profilesTried = 0;
   let profilesRefused = 0;
-  const isBrowser =
-    typeof window !== "undefined" &&
-    !window.linerElectron &&
-    !process.env.VITEST;
-  if (!isBrowser && !options.profiles && Date.now() >= webRemixRetryAt) {
+  if (!options.profiles && Date.now() >= webRemixRetryAt) {
     const stream = await resolveViaWebRemix(videoId, options, failures);
     if (stream) return stream;
-  } else if (!options.profiles && !isBrowser) {
+  } else if (!options.profiles) {
     failures.push(`WEB_REMIX paused: ${lastWebRemixError}`);
   }
   for (const profile of orderedProfiles(
